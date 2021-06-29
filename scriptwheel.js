@@ -2,32 +2,45 @@
 (function() {
     const wheel = document.querySelector('.wheel');
     const startButton = document.querySelector('.button');
-    const resultShow = document.querySelector('.result');
+    const resultShow = document.querySelector('#results');
 
     let timer = 0;
     let timerInterval;
     let deg = 0;
-    let segmentSize = 30; //deg per segment of the wheel
+    
+    const symbolSegments = [
+        300,
+        250,
+        750,
+        "bankrupt",
+        300,
+        250,
+        600,
+        400,
+        150,
+        200,
+        250,
+        400,
+        "loseATurn",
+        450,
+        150,
+        200,
+        100,
+        "freeSpin",
+        200,
+        300,
+        400,
+        500,
+        100,
+        200
+    ];
 
-    const symbolSegments = {
-        1: "yellow",
-        2: "orange",
-        3: "red",
-        4: "dark pink",
-        5: "pink",
-        6: "purple",
-        7: "dark purple",
-        8: "dark blue",
-        9: "light blue",
-        10: "pastel green",
-        11: "normal green",
-        12: "light green"
-    }
+    let segmentSize = 360/symbolSegments.length; //deg per segment of the wheel
 
     const chosenSegment = (actualDeg) => {
         const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
         console.log("Segment Nr: "+winningSegmentNr);
-        resultShow.innerHTML = symbolSegments[winningSegmentNr];
+        resultShow.innerHTML = symbolSegments[winningSegmentNr-1];
     };
   
     startButton.addEventListener('pointerdown', (event) => {
