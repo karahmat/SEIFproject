@@ -42,16 +42,20 @@ h1 {
 
 #words-container {
     background-color: #054e6f;
-    width: 450px;
-    height: 270px;
+    width: 430px;
+    height: 198px;
     display: flex;
     flex-wrap: wrap;
     margin: 20px auto;
 }
 
 .square {
+    width: 30px;
+    height: 30px;
     background-color: #ffd900;
     border: 1px solid gray;
+    margin-bottom: 10px;
+    margin-left: 1px;
     text-align: center;
     
 }
