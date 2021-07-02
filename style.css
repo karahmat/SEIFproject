@@ -32,14 +32,14 @@ h1 {
 
 }
 
-.score, .health {
+.score, .health, .accScore {
     background-color: white;
     width: 100px;        
     text-align: center;
     font-size: 14px;
 }
 
-.score p, .health p {
+.score p, .health p, .accScore p {
     margin: 0px;
 }
 
@@ -66,7 +66,7 @@ h1 {
 }
 
 #wheel-container {
-    border: 1px solid yellow;
+    
     width: 300px;    
     margin: 20px auto;
     position: relative;
@@ -92,7 +92,7 @@ h1 {
     cursor: pointer;
   }
   
-.button:hover {
+.button:hover, button:hover {
     opacity: 0.8;
 }
 
@@ -137,9 +137,9 @@ h1 {
 }
 
 
-  #user-input {
+#user-input {
     display: none;
-    background-color: #054e6f;
+    /*background-color: #054e6f;*/
     width: 430px;    
     justify-content: space-between;
     margin: 40px auto 20px auto;
@@ -160,6 +160,11 @@ input, select, button {
     margin: 5px auto 5px auto;
 }
 
+button {
+    cursor: pointer;
+}
+
+
 .spinAgain {
     display: none;
     text-align: center;
@@ -167,3 +172,17 @@ input, select, button {
     align-items: center;  
 }
 
+#anotherRoundDiv {
+    display: none;    
+    width: 430px;    
+    justify-content: center;
+    margin: 40px auto 20px auto;
+    color: white;    
+}
+
+#playAgainButton {
+    font-size: 20px;
+    background-color: #67c50a;
+    height:30px;
+    border-radius: 10px;
+}

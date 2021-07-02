@@ -1,20 +1,22 @@
 
 (function() {
-    const wheel = document.querySelector('.wheel');
-    const startButton = document.querySelector('.button');
-    const resultShow = document.querySelector('.results');
-    const userInput = document.querySelector('#user-input');
-    const vowelButton = document.querySelector('#vowelButton');
-    const solveButton = document.querySelector('#solveButton');
-    const consonantButton = document.querySelector('#consonantButton');
-    const letterResults = document.querySelector('.letter-results');
-    const scoreBoard = document.querySelector('.p-score');
-    const healthBoard = document.querySelector('.p-health');
+    const wheel = document.querySelector(".wheel");
+    const startButton = document.querySelector(".button");
+    const resultShow = document.querySelector(".results");
+    const userInput = document.querySelector("#user-input");
+    const vowelButton = document.querySelector("#vowelButton");
+    const solveButton = document.querySelector("#solveButton");
+    const consonantButton = document.querySelector("#consonantButton");
+    const letterResults = document.querySelector(".letter-results");
+    const scoreBoard = document.querySelector(".p-score");
+    const healthBoard = document.querySelector(".p-health");
+    const accScoreBoard = document.querySelector(".p-accScore");
     const consonantDiv = document.querySelector(".consonant");
     const vowelDiv = document.querySelector(".vowel");
     const spinAgainDiv = document.querySelector(".spinAgain");
     const spinagainButton = document.querySelector("#spinagainButton");
-    let vowelDropDown = document.querySelector('#vowelValue').childElementCount;
+    const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
+    const playAgainButton = document.querySelector("#playAgainButton");
 
     let timer = 0;
     let timerInterval;
@@ -58,7 +60,7 @@
     const isVowel = (letterInput) => {
         let isVowel = false;
         const vowels = ["A","E","I","O","U"];
-        for (vowel of vowels) {
+        for (const vowel of vowels) {
             if (letterInput === vowel) {
                 isVowel = true;
             }
@@ -96,9 +98,9 @@
         spinAgainDiv.style.display = "none";
         consonantDiv.style.display = "block";
         scoreBoard.innerText = player1.score;
-        
+                
     }
-  
+   
     //Animation for the spinning of the wheel. 
     //pointerdown and pointerup is there so that we can calculate the number of seconds the button is stayed press
     startButton.addEventListener("pointerdown", (event) => {
@@ -112,7 +114,7 @@
 
     startButton.addEventListener("pointerup", (event) => {
         console.log(event.type);
-            // Disable button during spin
+            // We need to disable the button while the wheel is spinning
         startButton.style.pointerEvents = "none";
             // Calculate a new rotation which depends on how long one presses the button plus some randomness
         deg = Math.floor(timer*1000+Math.floor(Math.random()*700)+360);
@@ -120,16 +122,13 @@
         wheel.style.transition = 'all 10s ease-out';
             // Rotate the wheel
         wheel.style.transform = `rotate(${deg}deg)`;
-            // Apply the blur
+            // Apply the blur, so that it looks cool while the wheel is spinning
         wheel.classList.add('blur');
         clearInterval(timerInterval);
         timer=0;
-
-        
-
-
     });
   
+    //what should the programme do after the wheel has finished its animation
     wheel.addEventListener('transitionend', () => {
       // Remove blur
       wheel.classList.remove('blur');
@@ -143,7 +142,7 @@
       const actualDeg = deg % 360;
       // Set the real rotation instantly without animation
       wheel.style.transform = `rotate(${actualDeg}deg)`;
-      //Calculate and display the winning segment;
+      //Calculate and display the chosen segment;
       chosenSegment(actualDeg);
       const tempResult = resultShow.innerText;
       if (tempResult !== "bankrupt" || tempResult !== "loseATurn" || tempResult !== "freeSpin") {
@@ -196,5 +195,65 @@
         userInput.style.display = "none";
         startButton.style.display = "block";     
     });
+
+    solveButton.addEventListener('click', () => {
+        let solveInput = document.querySelector("#solveValue").value;
+        solveInput = solveInput.toUpperCase();
+        if (solveInput === wordWOF.letters) {
+            player1.accScore = player1.score;
+            accScoreBoard.innerText = player1.accScore;
+            for (let i=0; i<solveInput.length; i++) {
+                if (solveInput[i] !== " ") {                    
+                    const lettersFound = document.querySelectorAll("[letter ="+solveInput[i]+"]");
+                    for (const letter of lettersFound) {
+                        letter.innerText = solveInput[i];
+                        letter.style["background-color"] = "white";                
+                    }
+                }
+            }
+
+            letterResults.innerText = "CONGRATS";
+            resultShow.innerText = "CONGRATS";   
+            userInput.style.display = "none";
+            anotherRoundDiv.style.display = "flex";         
+        } else {
+            letterResults.innerText = "Wrong solve!";
+            player1.health--;
+            healthBoard.innerText = player1.health;
+            userInput.style.display = "none";
+            startButton.style.display = "block";
+            spinAgainDiv.style.display = "none";
+            consonantDiv.style.display = "block";
+            scoreBoard.innerText = player1.score;
+        }                       
+
+    }); //end of solve button
+
+    playAgainButton.addEventListener('click', () => {
+        const squares = document.querySelectorAll(".square");
+        
+        for (const square of squares) {
+            square.innerText = "";
+            square.style["background-color"] = "#ffd900";
+            square.setAttribute("letter","");
+        }
+
+        randomNumber = Math.floor(Math.random()*originalWord.length);
+        wordWOF = new Word(originalWord[randomNumber].movie, originalWord[randomNumber].category);
+        originalWord.splice(randomNumber, 1);
+        console.log(wordWOF.letters);
+        wordWOF.arrangeLetters();
+        anotherRoundDiv.style.display = "none";
+        startButton.style.display = "block";
+        userInput.style.display = "none";
+        spinAgainDiv.style.display = "none";
+        consonantDiv.style.display = "block";
+        vowelDiv.style.visibility = "visible";
+        resultShow.innerText = "";
+        letterResults.innerText = "";
+        player1.score = 0;
+        scoreBoard.innerText = player1.score;
+        rebuildDropDown();
+    }); //end of play again button
 
   })();

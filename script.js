@@ -1,6 +1,7 @@
 class Word {
-    constructor(letters) {
+    constructor(letters, category) {
         this.letters = letters.toUpperCase();
+        this.category = category.toUpperCase();
         this.uniqueChar = []; //initialise array to store all my unique characters
         this.charIndex = {};
         this.startWord = [];
@@ -30,17 +31,6 @@ class Word {
              
         
     }
-
-    // getStartWord() {
-    //     this.startWord = this.letters;
-
-    //     for (let i=0; i<this.uniqueChar.length; i++) {
-    //         if (this.uniqueChar[i] !== " ") {
-    //             this.startWord = this.startWord.replaceAll(this.uniqueChar[i],"_");
-    //         } 
-    //     }
-    //     //this.startWord = startWord.split("").join(".");
-    // }
 
     arrangeLetters() {
         let displayObject = {row1: [], row2:[], row3:[], row4:[], row5:[]};
@@ -75,8 +65,6 @@ class Word {
                 }
             }
         }
-
-
     }
 
 
@@ -120,13 +108,54 @@ function makeSquares() {
     }
 }
 
+
+function rebuildDropDown() {
+    //remove and rebuild vowel dropdown
+    const vowelDropDown = document.querySelector("#vowelValue");
+    vowelDropDown.innerHTML = "";
+    const vowels = ["A", "E", "I", "O", "U"];
+    
+    for (const vowel of vowels) {
+        const option = document.createElement("option");
+        option.setAttribute("id","letter"+vowel);
+        option.setAttribute("value",vowel);
+        option.innerText = vowel;
+        vowelDropDown.append(option);
+    }
+    
+    //remove and rebuild consonant dropdown
+    const consonantDropDown = document.querySelector("#consonantValue");
+    consonantDropDown.innerHTML = "";
+
+    const consonants = "bcdfghjklmnpqrstvwxyz".toUpperCase();
+    
+    for (const consonant of consonants) {
+        const option2 = document.createElement("option");
+        option2.setAttribute("id","letter"+consonant);
+        option2.setAttribute("value",consonant);
+        option2.innerText = consonant;
+        consonantDropDown.append(option2);
+    }
+    
+} //endOfRebuild function
+
 makeSquares();
 
-const originalWord = "The Phantom Of The Opera And The Giant Beaver";
+const originalWord = [
+    {movie: "The Terminator", category: "Suspense"},
+    {movie: "The Avengers", category: "Action"}, 
+    {movie: "The New Avatar Series", category: "Fantasy"},
+    {movie: "Buffy the Vampire Slayer", category: "Comedy"},
+    {movie: "Borat Part Two", category: "Comedy"}
+];
+
+let randomNumber = Math.floor(Math.random()*originalWord.length);
 
 const player1 = new Player("Azman");
 
-const wordWOF = new Word(originalWord);
+let wordWOF = new Word(originalWord[randomNumber].movie, originalWord[randomNumber].category);
+originalWord.splice(randomNumber, 1);
+
 console.log(wordWOF.letters);
 wordWOF.getUniqueLetters();
 //wordWOF.getStartWord();
