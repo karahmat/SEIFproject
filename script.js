@@ -31,22 +31,22 @@ class Word {
         
     }
 
-    getStartWord() {
-        this.startWord = this.letters;
+    // getStartWord() {
+    //     this.startWord = this.letters;
 
-        for (let i=0; i<this.uniqueChar.length; i++) {
-            if (this.uniqueChar[i] !== " ") {
-                this.startWord = this.startWord.replaceAll(this.uniqueChar[i],"_");
-            } 
-        }
-        //this.startWord = startWord.split("").join(".");
-    }
+    //     for (let i=0; i<this.uniqueChar.length; i++) {
+    //         if (this.uniqueChar[i] !== " ") {
+    //             this.startWord = this.startWord.replaceAll(this.uniqueChar[i],"_");
+    //         } 
+    //     }
+    //     //this.startWord = startWord.split("").join(".");
+    // }
 
     arrangeLetters() {
         let displayObject = {row1: [], row2:[], row3:[], row4:[], row5:[]};
         let rowNum = 1;
         let currentRowRemainder = 13;
-        const splitWords = this.startWord.split(" ");
+        const splitWords = this.letters.split(" ");
 
         for (let i = 0; i < splitWords.length; i++) {
             if (currentRowRemainder - splitWords[i].length >= 0) {
@@ -70,7 +70,8 @@ class Word {
             for (let j=0; j<joinedWords.length; j++) {
                 
                 if (joinedWords[j] !== " ") {                
-                row.querySelectorAll(".square")[j].style["background-color"] = "#67c50a";                           
+                row.querySelectorAll(".square")[j].style["background-color"] = "#67c50a";
+                row.querySelectorAll(".square")[j].setAttribute("letter", joinedWords[j]);                           
                 }
             }
         }
@@ -81,6 +82,24 @@ class Word {
 
 }
 
+class Player {
+    constructor() {
+        this.name = "Player1";
+        this.score = 0;
+        this.playersTurn = false;
+        this.health = 5;
+        this.accScore = 0;
+    }
+
+    updateAccScore() {
+        this.accScore = this.accScore + this.score;
+    }
+
+    reduceHealth() {
+        this.health--;
+    }
+
+}
 
 function makeSquares() {
     const noRows = 5;
@@ -105,51 +124,11 @@ makeSquares();
 
 const originalWord = "The Phantom Of The Opera And The Giant Beaver";
 
+const player1 = new Player("Azman");
+
 const wordWOF = new Word(originalWord);
 console.log(wordWOF.letters);
 wordWOF.getUniqueLetters();
-wordWOF.getStartWord();
+//wordWOF.getStartWord();
 wordWOF.arrangeLetters();
 
-//console.log(wordWOF.startWord);
-
-// const originalWord = "Wheel of Fortune";
-// const wordWOF = new Word(originalWord);
-// const charIndex = wordWOF.getCharIndex();
-
-
-// let uniqueChar = wordWOF.getUniqueLetters();
-// uniqueChar.splice(uniqueChar.indexOf(" "),1);
-
-// let wordOnScreen = wordWOF.getStartWord()
-// console.log(uniqueChar);
-// //console.log(uniqueChar.indexOf("N"));
-
-// console.log(wordWOF.letters);
-// console.log(wordWOF.getStartWord());
-
-// let wordBox = document.getElementById("words");
-// let results = document.getElementById("results");
-
-// wordBox.innerHTML = wordOnScreen;
-// //let count = 3;
-
-// while (uniqueChar.length>0) {
-//     let guessLetter = prompt("Pick a Letter in Capital", "");
-//     if (uniqueChar.indexOf(guessLetter.toUpperCase()) > -1) {
-//         wordOnScreen = wordOnScreen.split("");
-//         //console.log(wordOnScreen);
-//         for (let i=0; i<charIndex[guessLetter.toUpperCase()].length;i++) {
-//             wordOnScreen.splice(charIndex[guessLetter.toUpperCase()][i],1,guessLetter.toUpperCase());        
-//         }
-//         wordOnScreen = wordOnScreen.join("");
-//         wordBox.innerHTML = wordOnScreen;
-//         results.innerHTML = "Congratulations!";
-//         uniqueChar.splice(uniqueChar.indexOf(guessLetter.toUpperCase()),1);
-//         console.log(uniqueChar);
-
-//     } else {
-//         results.innerHTML = "There is no "+guessLetter;
-//         break;
-//     }
-// }
