@@ -54,7 +54,7 @@ class Word {
         //const noBlocksPerRow = 13;
         
         for (let i=1; i<=noRows; i++) {
-            console.log(displayObject["row"+i]);
+            
             let joinedWords = displayObject["row"+i].join(" ");
             const row = document.querySelector("#row"+i); 
             for (let j=0; j<joinedWords.length; j++) {
@@ -65,6 +65,11 @@ class Word {
                 }
             }
         }
+    }
+
+    setCategory() {
+        const categoryDiv = document.querySelector(".category");
+        categoryDiv.innerText = this.category;
     }
 
 
@@ -156,8 +161,8 @@ const player1 = new Player("Azman");
 let wordWOF = new Word(originalWord[randomNumber].movie, originalWord[randomNumber].category);
 originalWord.splice(randomNumber, 1);
 
-console.log(wordWOF.letters);
 wordWOF.getUniqueLetters();
 //wordWOF.getStartWord();
 wordWOF.arrangeLetters();
+wordWOF.setCategory();
 

@@ -113,7 +113,7 @@
     });
 
     startButton.addEventListener("pointerup", (event) => {
-        console.log(event.type);
+        //console.log(event.type);
             // We need to disable the button while the wheel is spinning
         startButton.style.pointerEvents = "none";
             // Calculate a new rotation which depends on how long one presses the button plus some randomness
@@ -178,7 +178,7 @@
                 noLettersFound(vowelInput);                              
             }
             let vowelDropDown = document.querySelector('#vowelValue').childElementCount;
-            console.log(vowelDropDown);
+            //console.log(vowelDropDown);
             if (vowelDropDown < 1) {
                 vowelDiv.style.visibility = "hidden";
             }
@@ -241,8 +241,8 @@
         randomNumber = Math.floor(Math.random()*originalWord.length);
         wordWOF = new Word(originalWord[randomNumber].movie, originalWord[randomNumber].category);
         originalWord.splice(randomNumber, 1);
-        console.log(wordWOF.letters);
         wordWOF.arrangeLetters();
+        wordWOF.setCategory();
         anotherRoundDiv.style.display = "none";
         startButton.style.display = "block";
         userInput.style.display = "none";
