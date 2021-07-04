@@ -17,6 +17,7 @@
     const spinagainButton = document.querySelector("#spinagainButton");
     const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
     const playAgainButton = document.querySelector("#playAgainButton");
+    
 
     let timer = 0;
     let timerInterval;
@@ -69,15 +70,53 @@
         return isVowel;
     }
 
+    class Sound {
+        constructor(src) {
+        this.sound = document.createElement("audio");
+        this.sound.src = src;
+        this.sound.setAttribute("preload", "auto");
+        this.sound.setAttribute("controls", "none");
+        this.sound.style.display = "none";
+        document.body.appendChild(this.sound);
+        }
+
+        playThis(){          
+          this.sound.play();
+        }
+
+        stopThis(){
+          this.sound.pause();
+        }
+    }
+
+    
+
+    function doSetTimeOut(i, lettersFoundArg, letterInputArg) {
+        setTimeout( () => {
+            const mySound = new Sound("images/correct.mp3");
+            mySound.playThis();
+            lettersFoundArg[i].style["background-color"] = "white";
+            lettersFoundArg[i].style.transition = "background-color 1s ease";
+            lettersFoundArg[i].innerText = letterInputArg;
+        }, i*2000);
+    }
+
     //What to do if the guessed letter (vowels or consonants) is found
     const showLettersFound = (letterInput) => {
         const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
         const letterDropDown = document.querySelector("#letter"+letterInput);
         letterResults.innerText = lettersFound.length + " " + letterInput + " found";
-        for (letter of lettersFound) {
-                letter.innerText = letterInput;
-                letter.style["background-color"] = "white";                
+        for (let i=0; i<lettersFound.length; i++) {
+                
+                doSetTimeOut(i, lettersFound, letterInput);
+               
+                             
+                                                                         
+                //letter.style.transition = "color 2s ease 2s";                               
+                // letter.style.color = "black" //end status of font color
+                
             }
+
         letterDropDown.remove();
         if (isVowel(letterInput) === false) {
         player1.score = player1.score + parseInt(resultShow.innerText)*lettersFound.length;
@@ -119,7 +158,7 @@
             // Calculate a new rotation which depends on how long one presses the button plus some randomness
         deg = Math.floor(timer*1000+Math.floor(Math.random()*700)+360);
             // Set the transition on the wheel
-        wheel.style.transition = 'all 10s ease-out';
+        wheel.style.transition = 'all 1s ease-out';
             // Rotate the wheel
         wheel.style.transform = `rotate(${deg}deg)`;
             // Apply the blur, so that it looks cool while the wheel is spinning
