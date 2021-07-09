@@ -5,6 +5,8 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style.css">
+    <!-- removing icon due to audio -->
+    <link rel="shortcut icon" href="#"> 
     <title>Wheel Of Fortune</title>
 </head>
 
@@ -41,64 +43,69 @@
             <div class="results"></div>
         </div>
 
-        <div id="wheel-container">
-            <img class="marker" src="images/pointer.png" alt="marker" />
-            <img class="wheel" src="images/WOF-wheel.png" alt="wheel" />
-            <img class="button" src="images/button.png" alt="button" />
-        </div>
-
-        <div id="user-input">
-            
-            <div class="vowel">
-                <label for="vowelValue">Buy Vowel</label><br>
-                <select id="vowelValue" name="vowelValue">
-                    <option id="letterA" value="A">A</option>
-                    <option id="letterE" value="E">E</option>
-                    <option id="letterI" value="I">I</option>
-                    <option id="letterO" value="O">O</option>
-                    <option id="letterU" value="U">U</option>                     
-                </select><br>
-                <button type="button" id="vowelButton">Buy!</button>
+        <div id="wheelContainer-userInput">
+            <div id="wheel-container">
+                <img class="marker" src="images/pointer.png" alt="marker" />
+                <img class="wheel" src="images/WOF-wheel.png" alt="wheel" />                            
             </div>
 
-            <div class="solve">
-                <label for="solveValue">Solve Puzzle</label><br>
-                <input type="text" id="solveValue" name="solveValue" size=25><br>
-                <button type="button" id="solveButton">Solve</button>
-            </div>
-            
-            <div class="consonant">
-                <label for="consonantValue">Consonant</label><br>
-                <select type="text" id="consonantValue" name="consonantValue">
-                    <option id="letterB" value="B">B</option>
-                    <option id="letterC" value="C">C</option>
-                    <option id="letterD" value="D">D</option>
-                    <option id="letterF" value="F">F</option>
-                    <option id="letterG" value="G">G</option>
-                    <option id="letterH" value="H">H</option>                                         
-                    <option id="letterJ" value="J">J</option>                                         
-                    <option id="letterK" value="K">K</option>                                         
-                    <option id="letterL" value="L">L</option>                                         
-                    <option id="letterM" value="M">M</option>                                         
-                    <option id="letterN" value="N">N</option>                                         
-                    <option id="letterP" value="P">P</option>                                         
-                    <option id="letterQ" value="Q">Q</option>                                         
-                    <option id="letterR" value="R">R</option>                                         
-                    <option id="letterS" value="S">S</option>                                         
-                    <option id="letterT" value="T">T</option>                                         
-                    <option id="letterV" value="V">V</option>                                         
-                    <option id="letterW" value="W">W</option>                                         
-                    <option id="letterX" value="X">X</option>                                         
-                    <option id="letterY" value="Y">Y</option>                                         
-                    <option id="letterZ" value="Z">Z</option>                                                             
-                </select><br>
-                <button type="button" id="consonantButton">Submit</button>    
-            </div>
-            
-            <div class="spinAgain">
-                <button type="button" id="spinagainButton">Spin Again</button>
+            <div id="spinButton-container">
+                <img class="button" src="images/button.png" alt="button" />
             </div>
 
+            <div id="user-input">
+                
+                <div class="vowel">
+                    <label for="vowelValue">Buy Vowel</label><br>
+                    <select id="vowelValue" name="vowelValue">
+                        <option id="letterA" value="A">A</option>
+                        <option id="letterE" value="E">E</option>
+                        <option id="letterI" value="I">I</option>
+                        <option id="letterO" value="O">O</option>
+                        <option id="letterU" value="U">U</option>                     
+                    </select><br>
+                    <button type="button" id="vowelButton">Buy!</button>
+                </div>
+
+                <div class="solve">
+                    <label for="solveValue">Solve Puzzle</label><br>
+                    <input type="text" id="solveValue" name="solveValue" size=25><br>
+                    <button type="button" id="solveButton">Solve</button>
+                </div>
+                
+                <div class="consonant">
+                    <label for="consonantValue">Consonant</label><br>
+                    <select type="text" id="consonantValue" name="consonantValue">
+                        <option id="letterB" value="B">B</option>
+                        <option id="letterC" value="C">C</option>
+                        <option id="letterD" value="D">D</option>
+                        <option id="letterF" value="F">F</option>
+                        <option id="letterG" value="G">G</option>
+                        <option id="letterH" value="H">H</option>                                         
+                        <option id="letterJ" value="J">J</option>                                         
+                        <option id="letterK" value="K">K</option>                                         
+                        <option id="letterL" value="L">L</option>                                         
+                        <option id="letterM" value="M">M</option>                                         
+                        <option id="letterN" value="N">N</option>                                         
+                        <option id="letterP" value="P">P</option>                                         
+                        <option id="letterQ" value="Q">Q</option>                                         
+                        <option id="letterR" value="R">R</option>                                         
+                        <option id="letterS" value="S">S</option>                                         
+                        <option id="letterT" value="T">T</option>                                         
+                        <option id="letterV" value="V">V</option>                                         
+                        <option id="letterW" value="W">W</option>                                         
+                        <option id="letterX" value="X">X</option>                                         
+                        <option id="letterY" value="Y">Y</option>                                         
+                        <option id="letterZ" value="Z">Z</option>                                                             
+                    </select><br>
+                    <button type="button" id="consonantButton">Submit</button>    
+                </div>
+                
+                <div class="spinAgain">
+                    <button type="button" id="spinagainButton">Spin Again</button>
+                </div>
+
+            </div>
         </div>
 
         <div id="anotherRoundDiv">
@@ -107,7 +114,10 @@
 
         
     </div>
-
+    
+    <!-- a ping sound when a correct letter is chosen -->
+    <audio src="images/correct.mp3" preload="auto" controls="none" style="display: none"></audio>
+    
     <script src="script.js" charset="utf-8"></script>
     <script src="scriptwheel.js" charset="utf-8"></script>
 

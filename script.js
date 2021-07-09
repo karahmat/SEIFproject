@@ -88,10 +88,7 @@ class Player {
         this.accScore = this.accScore + this.score;
     }
 
-    reduceHealth() {
-        this.health--;
-    }
-
+    
 }
 
 function makeSquares() {
@@ -102,6 +99,7 @@ function makeSquares() {
     for (let i=1; i<=noRows; i++) {
         newRow = document.createElement("div");
         newRow.setAttribute("id", ("row"+i));
+        newRow.className = "rowWords";
         newRow.style.display = "flex";
         document.querySelector('#words-container').append(newRow);
         

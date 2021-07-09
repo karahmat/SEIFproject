@@ -1,7 +1,7 @@
 
 (function() {
     const wheel = document.querySelector(".wheel");
-    const startButton = document.querySelector(".button");
+    const startButton = document.querySelector("#spinButton-container");
     const resultShow = document.querySelector(".results");
     const userInput = document.querySelector("#user-input");
     const vowelButton = document.querySelector("#vowelButton");
@@ -17,7 +17,7 @@
     const spinagainButton = document.querySelector("#spinagainButton");
     const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
     const playAgainButton = document.querySelector("#playAgainButton");
-    
+    const mySound = document.querySelector("audio");
 
     let timer = 0;
     let timerInterval;
@@ -56,6 +56,7 @@
         const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
         //console.log("Segment Nr: "+winningSegmentNr);
         resultShow.innerText = symbolSegments[winningSegmentNr-1];
+        return resultShow.innerText;
     };
 
     const isVowel = (letterInput) => {
@@ -70,31 +71,14 @@
         return isVowel;
     }
 
-    class Sound {
-        constructor(src) {
-        this.sound = document.createElement("audio");
-        this.sound.src = src;
-        this.sound.setAttribute("preload", "auto");
-        this.sound.setAttribute("controls", "none");
-        this.sound.style.display = "none";
-        document.body.appendChild(this.sound);
-        }
-
-        playThis(){          
-          this.sound.play();
-        }
-
-        stopThis(){
-          this.sound.pause();
-        }
-    }
-
     
+
+    //const mySound = new Sound("images/correct.mp3");
 
     function doSetTimeOut(i, lettersFoundArg, letterInputArg) {
         setTimeout( () => {
-            const mySound = new Sound("images/correct.mp3");
-            mySound.playThis();
+            
+            mySound.play();
             lettersFoundArg[i].style["background-color"] = "white";
             lettersFoundArg[i].style.transition = "background-color 1s ease";
             lettersFoundArg[i].innerText = letterInputArg;
@@ -182,13 +166,15 @@
       // Set the real rotation instantly without animation
       wheel.style.transform = `rotate(${actualDeg}deg)`;
       //Calculate and display the chosen segment;
-      chosenSegment(actualDeg);
-      const tempResult = resultShow.innerText;
+      const tempResult = chosenSegment(actualDeg);
+      console.log("result of wheel: "+tempResult);      
       if (tempResult !== "bankrupt" || tempResult !== "loseATurn" || tempResult !== "freeSpin") {
         //console.log(tempResult);
-        startButton.style.display = "none";
-        userInput.style.display = "flex";
-        
+        startButton.style.display = "none";      
+        userInput.style.display = "flex";        
+      } else {
+        startButton.style.display = "flex";      
+        userInput.style.display = "none";
       }
       
     });
@@ -232,12 +218,12 @@
         spinAgainDiv.style.display = "none";
         consonantDiv.style.display = "block";
         userInput.style.display = "none";
-        startButton.style.display = "block";     
+        startButton.style.display = "flex";     
     });
 
     solveButton.addEventListener('click', () => {
-        let solveInput = document.querySelector("#solveValue").value;
-        solveInput = solveInput.toUpperCase();
+        let solveInputField = document.querySelector("#solveValue");
+        const solveInput = solveInputField.value.toUpperCase();
         if (solveInput === wordWOF.letters) {
             player1.accScore = player1.score;
             accScoreBoard.innerText = player1.accScore;
@@ -254,13 +240,15 @@
             letterResults.innerText = "CONGRATS";
             resultShow.innerText = "CONGRATS";   
             userInput.style.display = "none";
-            anotherRoundDiv.style.display = "flex";         
+            anotherRoundDiv.style.display = "flex";
+            solveInputField.value = "";
+                     
         } else {
             letterResults.innerText = "Wrong solve!";
             player1.health--;
             healthBoard.innerText = player1.health;
             userInput.style.display = "none";
-            startButton.style.display = "block";
+            startButton.style.display = "flex";
             spinAgainDiv.style.display = "none";
             consonantDiv.style.display = "block";
             scoreBoard.innerText = player1.score;
@@ -283,7 +271,7 @@
         wordWOF.arrangeLetters();
         wordWOF.setCategory();
         anotherRoundDiv.style.display = "none";
-        startButton.style.display = "block";
+        startButton.style.display = "flex";
         userInput.style.display = "none";
         spinAgainDiv.style.display = "none";
         consonantDiv.style.display = "block";
