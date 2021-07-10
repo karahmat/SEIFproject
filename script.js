@@ -1,3 +1,11 @@
+// const originalWord = [
+//     {movie: "The Terminator", category: "Suspense"},
+//     {movie: "The Avengers", category: "Action"}, 
+//     {movie: "The New Avatar Series", category: "Fantasy"},
+//     {movie: "Buffy the Vampire Slayer", category: "Comedy"},
+//     {movie: "Borat Part Two", category: "Comedy"}
+// ];
+
 class Word {
     constructor(letters, category) {
         this.letters = letters.toUpperCase();
@@ -5,6 +13,7 @@ class Word {
         this.uniqueChar = []; //initialise array to store all my unique characters
         this.charIndex = {};
         this.startWord = [];
+        this.uniqueCharCount = 0;
         //this.arrIndexLetters = arrIndexLetters;        
     }
 
@@ -15,9 +24,11 @@ class Word {
         for (let i=0; i<arrStrings.length; i++) {
           if (this.uniqueChar.indexOf(arrStrings[i]) == -1) {
             this.uniqueChar.push(arrStrings[i]);
+            this.uniqueCharCount++;
             }
         }
 
+        
 
         for (let i=0; i<this.uniqueChar.length; i++) {
             let indices = [];
@@ -91,6 +102,7 @@ class Player {
     
 }
 
+
 //animate the navigation bar
 const toggleButton = document.querySelector(".navbar-toggle");
 const navBarLinks = document.querySelectorAll(".navbar-links");
@@ -154,23 +166,16 @@ function rebuildDropDown() {
 
 makeSquares();
 
-const originalWord = [
-    {movie: "The Terminator", category: "Suspense"},
-    {movie: "The Avengers", category: "Action"}, 
-    {movie: "The New Avatar Series", category: "Fantasy"},
-    {movie: "Buffy the Vampire Slayer", category: "Comedy"},
-    {movie: "Borat Part Two", category: "Comedy"}
-];
+const player1 = new Player("Azman");
 
 let randomNumber = Math.floor(Math.random()*originalWord.length);
 
-const player1 = new Player("Azman");
+let wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
+console.log(originalWord[randomNumber].title);
 
-let wordWOF = new Word(originalWord[randomNumber].movie, originalWord[randomNumber].category);
 originalWord.splice(randomNumber, 1);
 
 wordWOF.getUniqueLetters();
 //wordWOF.getStartWord();
 wordWOF.arrangeLetters();
 wordWOF.setCategory();
-

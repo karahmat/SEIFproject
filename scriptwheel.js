@@ -82,7 +82,7 @@
             lettersFoundArg[i].style["background-color"] = "white";
             lettersFoundArg[i].style.transition = "background-color 1s ease";
             lettersFoundArg[i].innerText = letterInputArg;
-        }, i*2000);
+        }, i*500);
     }
 
     //What to do if the guessed letter (vowels or consonants) is found
@@ -90,22 +90,28 @@
         const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
         const letterDropDown = document.querySelector("#letter"+letterInput);
         letterResults.innerText = lettersFound.length + " " + letterInput + " found";
-        for (let i=0; i<lettersFound.length; i++) {
-                
+        for (let i=0; i<lettersFound.length; i++) { 
                 doSetTimeOut(i, lettersFound, letterInput);
-               
-                             
-                                                                         
-                //letter.style.transition = "color 2s ease 2s";                               
-                // letter.style.color = "black" //end status of font color
-                
             }
 
         letterDropDown.remove();
+
         if (isVowel(letterInput) === false) {
         player1.score = player1.score + parseInt(resultShow.innerText)*lettersFound.length;
         }
+
         scoreBoard.innerText = player1.score;
+        wordWOF.uniqueCharCount--;
+
+        //if all the letters have been guessed
+        if (wordWOF.uniqueCharCount === 1) {
+            letterResults.innerText = "CONGRATS";
+            resultShow.innerText = "CONGRATS";   
+            userInput.style.display = "none";
+            anotherRoundDiv.style.display = "flex";
+            // solveInputField.value = "";
+        }
+
     };
 
     //What to do if the guessed letter (vowels or consonants) is not found
@@ -168,10 +174,23 @@
       //Calculate and display the chosen segment;
       const tempResult = chosenSegment(actualDeg);
       console.log("result of wheel: "+tempResult);      
-      if (tempResult == "bankrupt" || tempResult == "loseATurn" || tempResult == "freeSpin") {
+      if (tempResult == "bankrupt") {
         //console.log(tempResult);
-        startButton.style.display = "flex";      
-        userInput.style.display = "none";        
+        player1.health--;   
+        player1.score = 0;
+        scoreBoard.innerText = player1.score;
+        healthBoard.innerText = player1.health;
+
+      } else if (tempResult == "freeSpin") {
+        player1.health++;
+        healthBoard.innerText = player1.health;
+        letterResults.innerText = "Health Gained!";  
+
+      } else if (tempResult == "loseATurn") {
+        player1.health--;
+        healthBoard.innerText = player1.health;
+        letterResults.innerText = "Health Lost!";  
+
       } else {
         startButton.style.display = "none";      
         userInput.style.display = "flex";
@@ -266,7 +285,7 @@
         }
 
         randomNumber = Math.floor(Math.random()*originalWord.length);
-        wordWOF = new Word(originalWord[randomNumber].movie, originalWord[randomNumber].category);
+        wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
         originalWord.splice(randomNumber, 1);
         wordWOF.arrangeLetters();
         wordWOF.setCategory();

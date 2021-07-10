@@ -14,7 +14,7 @@ body {
     width: 100%;
     /* text-align: center; */    
     padding: 0px;
-    border: 1px solid white;
+    /* border: 1px solid white; */
     font-size: 20px;
 }
 
@@ -24,7 +24,7 @@ body {
     justify-content: space-between; 
     align-items: center;
     color: white;
-    border: 1px solid white;
+    /* border: 1px solid white; */
     margin: 0px;
     padding: 0px;
 }
