@@ -168,13 +168,13 @@
       //Calculate and display the chosen segment;
       const tempResult = chosenSegment(actualDeg);
       console.log("result of wheel: "+tempResult);      
-      if (tempResult !== "bankrupt" || tempResult !== "loseATurn" || tempResult !== "freeSpin") {
+      if (tempResult == "bankrupt" || tempResult == "loseATurn" || tempResult == "freeSpin") {
         //console.log(tempResult);
-        startButton.style.display = "none";      
-        userInput.style.display = "flex";        
-      } else {
         startButton.style.display = "flex";      
-        userInput.style.display = "none";
+        userInput.style.display = "none";        
+      } else {
+        startButton.style.display = "none";      
+        userInput.style.display = "flex";
       }
       
     });
@@ -225,7 +225,7 @@
         let solveInputField = document.querySelector("#solveValue");
         const solveInput = solveInputField.value.toUpperCase();
         if (solveInput === wordWOF.letters) {
-            player1.accScore = player1.score;
+            player1.updateAccScore();
             accScoreBoard.innerText = player1.accScore;
             for (let i=0; i<solveInput.length; i++) {
                 if (solveInput[i] !== " ") {                    
@@ -242,7 +242,7 @@
             userInput.style.display = "none";
             anotherRoundDiv.style.display = "flex";
             solveInputField.value = "";
-                     
+
         } else {
             letterResults.innerText = "Wrong solve!";
             player1.health--;

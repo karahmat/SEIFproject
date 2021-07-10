@@ -12,11 +12,18 @@
 
 <body>
     <div id="app">
-        <div id="header">
-            
-            <h1>Wheel of Fortune</h1>
-            
+        <div id="header">           
+            <ul>
+                <li class="logo">Wheel of Fortune</li>
+                <li class="navbar-toggle"><img src="images/menuButton.png" alt="menuButton" /></li>
+                <li class="navbar-links"><a href="#">Home</a></li>
+                <li class="navbar-links"><a href="#">About</a></li>
+                <li class="navbar-links"><a href="#">Two players</a></li>    
+                <li class="navbar-links"><a href="#">High Scores</a></li>    
+            </ul>
         </div>
+
+        
 
         <div id="scorehealth">
             <div class="health">
@@ -106,11 +113,14 @@
                 </div>
 
             </div>
+
+            <div id="anotherRoundDiv">
+                <button type="button" id="playAgainButton">Play Another Round?</button>
+            </div>
+            
         </div>
 
-        <div id="anotherRoundDiv">
-            <button type="button" id="playAgainButton">Play Another Round?</button>
-        </div>
+        
 
         
     </div>
