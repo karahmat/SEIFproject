@@ -91,7 +91,7 @@ class Player {
         this.name = "Player1";
         this.score = 0;
         this.playersTurn = false;
-        this.health = 5;
+        this.health = 3;
         this.accScore = 0;
     }
 

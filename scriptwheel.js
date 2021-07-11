@@ -54,7 +54,6 @@
 
     const chosenSegment = (actualDeg) => {
         const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
-        //console.log("Segment Nr: "+winningSegmentNr);
         resultShow.innerText = symbolSegments[winningSegmentNr-1];
         return resultShow.innerText;
     };
@@ -72,9 +71,7 @@
     }
 
     
-
-    //const mySound = new Sound("images/correct.mp3");
-
+      
     function doSetTimeOut(i, lettersFoundArg, letterInputArg) {
         setTimeout( () => {
             
@@ -82,7 +79,7 @@
             lettersFoundArg[i].style["background-color"] = "white";
             lettersFoundArg[i].style.transition = "background-color 1s ease";
             lettersFoundArg[i].innerText = letterInputArg;
-        }, i*500);
+        }, i*1500);
     }
 
     //What to do if the guessed letter (vowels or consonants) is found
@@ -114,22 +111,66 @@
 
     };
 
+    //Reduce health function needed when no words found, bankrupt, lose a Turn
+    const reduceHealth = () => {
+        player1.health--;
+        healthBoard.innerText = player1.health;
+        if (player1.health <=0) {
+            userInput.style.display = "none";
+            startButton.style.display = "none";   
+            anotherRoundDiv.style.display = "flex";
+        }
+    }
+
     //What to do if the guessed letter (vowels or consonants) is not found
     const noLettersFound = (letterInput) => {
         //const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
         const letterDropDown = document.querySelector("#letter"+letterInput);        
         letterResults.innerText = "No "+letterInput+" found!";
-        player1.health--;
-        healthBoard.innerText = player1.health;
-        letterDropDown.remove();
+        reduceHealth();
+
+        if (player1.health > 0) {
+            letterDropDown.remove();
+            userInput.style.display = "none";
+            startButton.style.display = "flex";
+            spinAgainDiv.style.display = "none";
+            consonantDiv.style.display = "block";
+            scoreBoard.innerText = player1.score;               
+        }
+
+    }
+
+    const playAgainGame = () => {
+        const squares = document.querySelectorAll(".square");
+        
+        for (const square of squares) {
+            square.innerText = "";
+            square.style["background-color"] = "#ffd900";
+            square.setAttribute("letter","");
+        }
+
+        randomNumber = Math.floor(Math.random()*originalWord.length);
+        wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
+        originalWord.splice(randomNumber, 1);
+        wordWOF.arrangeLetters();
+        wordWOF.setCategory();
+        anotherRoundDiv.style.display = "none";
+        startButton.style.display = "flex";
         userInput.style.display = "none";
-        startButton.style.display = "block";
         spinAgainDiv.style.display = "none";
         consonantDiv.style.display = "block";
+        vowelDiv.style.visibility = "visible";
+        resultShow.innerText = "";
+        letterResults.innerText = "";
+        player1.score = 0;
         scoreBoard.innerText = player1.score;
-                
+        player1.health = 3;
+        healthBoard.innerText = player1.health;
+        rebuildDropDown();
     }
    
+
+
     //Animation for the spinning of the wheel. 
     //pointerdown and pointerup is there so that we can calculate the number of seconds the button is stayed press
     startButton.addEventListener("pointerdown", (event) => {
@@ -172,14 +213,12 @@
       // Set the real rotation instantly without animation
       wheel.style.transform = `rotate(${actualDeg}deg)`;
       //Calculate and display the chosen segment;
-      const tempResult = chosenSegment(actualDeg);
-      console.log("result of wheel: "+tempResult);      
+      const tempResult = chosenSegment(actualDeg);       
       if (tempResult == "bankrupt") {
         //console.log(tempResult);
-        player1.health--;   
+        reduceHealth();
         player1.score = 0;
-        scoreBoard.innerText = player1.score;
-        healthBoard.innerText = player1.health;
+        scoreBoard.innerText = player1.score;   
 
       } else if (tempResult == "freeSpin") {
         player1.health++;
@@ -187,8 +226,7 @@
         letterResults.innerText = "Health Gained!";  
 
       } else if (tempResult == "loseATurn") {
-        player1.health--;
-        healthBoard.innerText = player1.health;
+        reduceHealth();
         letterResults.innerText = "Health Lost!";  
 
       } else {
@@ -264,42 +302,20 @@
 
         } else {
             letterResults.innerText = "Wrong solve!";
-            player1.health--;
-            healthBoard.innerText = player1.health;
-            userInput.style.display = "none";
-            startButton.style.display = "flex";
-            spinAgainDiv.style.display = "none";
-            consonantDiv.style.display = "block";
-            scoreBoard.innerText = player1.score;
+            reduceHealth();
+            solveInputField.value = "";
+
+            if (player1.health > 0) {
+                userInput.style.display = "none";
+                startButton.style.display = "flex";
+                spinAgainDiv.style.display = "none";
+                consonantDiv.style.display = "block";
+                scoreBoard.innerText = player1.score;
+            }
         }                       
 
     }); //end of solve button
 
-    playAgainButton.addEventListener('click', () => {
-        const squares = document.querySelectorAll(".square");
-        
-        for (const square of squares) {
-            square.innerText = "";
-            square.style["background-color"] = "#ffd900";
-            square.setAttribute("letter","");
-        }
-
-        randomNumber = Math.floor(Math.random()*originalWord.length);
-        wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
-        originalWord.splice(randomNumber, 1);
-        wordWOF.arrangeLetters();
-        wordWOF.setCategory();
-        anotherRoundDiv.style.display = "none";
-        startButton.style.display = "flex";
-        userInput.style.display = "none";
-        spinAgainDiv.style.display = "none";
-        consonantDiv.style.display = "block";
-        vowelDiv.style.visibility = "visible";
-        resultShow.innerText = "";
-        letterResults.innerText = "";
-        player1.score = 0;
-        scoreBoard.innerText = player1.score;
-        rebuildDropDown();
-    }); //end of play again button
+    playAgainButton.addEventListener('click', playAgainGame); //end of play again button
 
   })();
