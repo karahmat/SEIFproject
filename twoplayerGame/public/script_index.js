@@ -13,12 +13,14 @@ toggleButton.addEventListener("click", () => {
 });
 
 //form controls
-const form = document.querySelector("#form");
+
 const newGameButton = document.querySelector("#newGameButton");
 const joinGameButton = document.querySelector("#joinGameButton");
 const gameCodeInput = document.querySelector("#gameCodeInput");
 const gameCodeDisplay = document.querySelector("#gameCodeDisplay");
 const playerDiv = document.querySelector("#player");
+let player1;
+let wordWOF;
 
 newGameButton.addEventListener("click", () => {
     socket.emit("newGame");
@@ -47,9 +49,13 @@ socket.on("playerData", (data) => {
     console.log("My ID: "+data.clientID);
     console.log(data.playerTurn);
     playerDiv.style.display = "block";
-    init(data.clientID, data.playerTurn, data.indexWord);
+    
+    init(data.indexWord);
+    player1 = new Player(data.clientID, data.playerID,data.playerTurn);
+    playGame(player1);
+
     if (data.playerTurn) {
-        playerDiv.innerText = "MY TURN";        
+        playerDiv.innerText = "MY TURN";                
     } else {
         playerDiv.innerText = "NOT MY TURN";
     }

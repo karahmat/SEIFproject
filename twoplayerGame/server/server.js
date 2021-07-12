@@ -20,10 +20,11 @@ server.listen(port, ()=> {
     console.log(`Server is up on port ${port}.`)
 });
 
-const state = {};
-const roomClients = {};
-const clientRooms = {};
 
+const roomClients = {}; //an object, key is the room, value is the clientIDs (an arrray)
+const clientRooms = {}; //an object, key is the clientID, value is the room.
+const letters = "BCDFGHJKLMNPQRSTVWXYZ";
+const vowels = "AEIOU";
 
 
 io.on('connection', (socket) => {
@@ -58,12 +59,14 @@ io.on('connection', (socket) => {
         io.to(roomClients[data.codeFrmClient][0]).emit("playerData", {
             indexWord: randomIndexWord,
             clientID: roomClients[data.codeFrmClient][0],
+            playerID: "Player 1",
             playerTurn: true,
         });
         
         io.to(roomClients[data.codeFrmClient][1]).emit("playerData", {
             indexWord: randomIndexWord,
             clientID: roomClients[data.codeFrmClient][1],
+            playerID: "Player 2",
             playerTurn: false,
         });
         
@@ -75,6 +78,34 @@ io.on('connection', (socket) => {
         console.log("timer from client: "+timer);
         io.in(clientRooms[socket.id]).emit("timerReturn",timer);
     });
+
+    socket.on("updateScore", (scores) => {
+        console.log(scores);
+        io.in(clientRooms[socket.id]).emit("otherPlayerScore",scores);
+    });
+
+    socket.on("togglePlayer", (playerID) => {
+        if (roomClients[clientRooms[socket.id]][0] === playerID) {
+            io.to(roomClients[clientRooms[socket.id]][0]).emit("toggleFromServer", false);
+            io.to(roomClients[clientRooms[socket.id]][1]).emit("toggleFromServer", true);
+        } else if (roomClients[clientRooms[socket.id]][1] === playerID) {
+            io.to(roomClients[clientRooms[socket.id]][1]).emit("toggleFromServer", false);
+            io.to(roomClients[clientRooms[socket.id]][0]).emit("toggleFromServer", true);
+        }
+
+    });
+
+    for (let i=0; i<letters.length; i++) {              
+        socket.on("client"+letters[i],(letter) => {
+            io.in(clientRooms[socket.id]).emit("letterServer",letter);
+        });
+    }
+
+    for (let j=0; j<vowels.length; j++) { 
+        socket.on("vowel"+vowels[j],(vowelLetter) => {
+            io.in(clientRooms[socket.id]).emit("vowelServer",vowelLetter);
+        })
+    }   
 
 });
 
