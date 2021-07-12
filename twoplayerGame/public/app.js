@@ -1,3 +1,7 @@
+//add socket
+const socket = io("http://localhost:3000");
+socket.on("connection");
+
 class Word {
     constructor(letters, category) {
         this.letters = letters.toUpperCase();
@@ -169,6 +173,151 @@ const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
 const playAgainButton = document.querySelector("#playAgainButton");
 const mySound = document.querySelector("audio");
 
+//wheel characteristics
+const symbolSegments = [
+    300,
+    250,
+    750,
+    "bankrupt",
+    300,
+    250,
+    600,
+    400,
+    150,
+    200,
+    250,
+    400,
+    "loseATurn",
+    450,
+    150,
+    200,
+    100,
+    "freeSpin",
+    200,
+    300,
+    400,
+    500,
+    100,
+    200
+];
+
+let segmentSize = 360/symbolSegments.length; //deg per segment of the wheel
+
+const chosenSegment = (actualDeg) => {
+    const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
+    resultShow.innerText = symbolSegments[winningSegmentNr-1];
+    return resultShow.innerText;
+};
+
+const isVowel = (letterInput) => {
+    let isVowel = false;
+    const vowels = ["A","E","I","O","U"];
+    for (const vowel of vowels) {
+        if (letterInput === vowel) {
+            isVowel = true;
+        }
+    }
+    
+    return isVowel;
+}    
+  
+function doSetTimeOut(i, lettersFoundArg, letterInputArg) {
+    setTimeout( () => {
+        
+        mySound.play();
+        lettersFoundArg[i].style["background-color"] = "white";
+        lettersFoundArg[i].style.transition = "background-color 1s ease";
+        lettersFoundArg[i].innerText = letterInputArg;
+    }, i*1500);
+}
+
+//What to do if the guessed letter (vowels or consonants) is found
+const showLettersFound = (letterInput) => {
+    const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
+    const letterDropDown = document.querySelector("#letter"+letterInput);
+    letterResults.innerText = lettersFound.length + " " + letterInput + " found";
+    for (let i=0; i<lettersFound.length; i++) { 
+            doSetTimeOut(i, lettersFound, letterInput);
+        }
+
+    letterDropDown.remove();
+
+    if (isVowel(letterInput) === false) {
+    player1.score = player1.score + parseInt(resultShow.innerText)*lettersFound.length;
+    }
+
+    scoreBoard.innerText = player1.score;
+    wordWOF.uniqueCharCount--;
+
+    //if all the letters have been guessed
+    if (wordWOF.uniqueCharCount === 1) {
+        letterResults.innerText = "CONGRATS";
+        resultShow.innerText = "CONGRATS";   
+        userInput.style.display = "none";
+        anotherRoundDiv.style.display = "flex";
+        // solveInputField.value = "";
+    }
+
+};
+
+//Reduce health function needed when no words found, bankrupt, lose a Turn
+const reduceHealth = () => {
+    player1.health--;
+    healthBoard.innerText = player1.health;
+    if (player1.health <=0) {
+        userInput.style.display = "none";
+        startButton.style.display = "none";   
+        anotherRoundDiv.style.display = "flex";
+    }
+}
+
+//What to do if the guessed letter (vowels or consonants) is not found
+const noLettersFound = (letterInput) => {
+    //const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
+    const letterDropDown = document.querySelector("#letter"+letterInput);        
+    letterResults.innerText = "No "+letterInput+" found!";
+    reduceHealth();
+
+    if (player1.health > 0) {
+        letterDropDown.remove();
+        userInput.style.display = "none";
+        startButton.style.display = "flex";
+        spinAgainDiv.style.display = "none";
+        consonantDiv.style.display = "block";
+        scoreBoard.innerText = player1.score;               
+    }
+}
+
+const playAgainGame = () => {
+    const squares = document.querySelectorAll(".square");
+    
+    for (const square of squares) {
+        square.innerText = "";
+        square.style["background-color"] = "#ffd900";
+        square.setAttribute("letter","");
+    }
+
+    randomNumber = Math.floor(Math.random()*originalWord.length);
+    wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
+    originalWord.splice(randomNumber, 1);
+    wordWOF.arrangeLetters();
+    wordWOF.setCategory();
+    anotherRoundDiv.style.display = "none";
+    startButton.style.display = "flex";
+    userInput.style.display = "none";
+    spinAgainDiv.style.display = "none";
+    consonantDiv.style.display = "block";
+    vowelDiv.style.visibility = "visible";
+    resultShow.innerText = "";
+    letterResults.innerText = "";
+    player1.score = 0;
+    scoreBoard.innerText = player1.score;
+    player1.health = 3;
+    healthBoard.innerText = player1.health;
+    rebuildDropDown();
+}
+
+
     
 function init(name,isTurn, indexWordInput) {
     formDiv.style.display = "none";
@@ -178,7 +327,8 @@ function init(name,isTurn, indexWordInput) {
     if (isTurn) {
         startButton.style.display = "block";
     } else {
-        startButton.style.display = "none";
+        startButton.style.visibility = "hidden";
+        startButton.style.pointerEvents = "none";
     }
 
     makeSquares();
@@ -195,153 +345,9 @@ function init(name,isTurn, indexWordInput) {
 
     let timer = 0;
     let timerInterval;
-    let deg = 0;
-    
-    const symbolSegments = [
-        300,
-        250,
-        750,
-        "bankrupt",
-        300,
-        250,
-        600,
-        400,
-        150,
-        200,
-        250,
-        400,
-        "loseATurn",
-        450,
-        150,
-        200,
-        100,
-        "freeSpin",
-        200,
-        300,
-        400,
-        500,
-        100,
-        200
-    ];
+    let deg = 0;         
 
-    let segmentSize = 360/symbolSegments.length; //deg per segment of the wheel
-
-    const chosenSegment = (actualDeg) => {
-        const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
-        resultShow.innerText = symbolSegments[winningSegmentNr-1];
-        return resultShow.innerText;
-    };
-
-    const isVowel = (letterInput) => {
-        let isVowel = false;
-        const vowels = ["A","E","I","O","U"];
-        for (const vowel of vowels) {
-            if (letterInput === vowel) {
-                isVowel = true;
-            }
-        }
-        
-        return isVowel;
-    }    
-      
-    function doSetTimeOut(i, lettersFoundArg, letterInputArg) {
-        setTimeout( () => {
-            
-            mySound.play();
-            lettersFoundArg[i].style["background-color"] = "white";
-            lettersFoundArg[i].style.transition = "background-color 1s ease";
-            lettersFoundArg[i].innerText = letterInputArg;
-        }, i*1500);
-    }
-
-    //What to do if the guessed letter (vowels or consonants) is found
-    const showLettersFound = (letterInput) => {
-        const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
-        const letterDropDown = document.querySelector("#letter"+letterInput);
-        letterResults.innerText = lettersFound.length + " " + letterInput + " found";
-        for (let i=0; i<lettersFound.length; i++) { 
-                doSetTimeOut(i, lettersFound, letterInput);
-            }
-
-        letterDropDown.remove();
-
-        if (isVowel(letterInput) === false) {
-        player1.score = player1.score + parseInt(resultShow.innerText)*lettersFound.length;
-        }
-
-        scoreBoard.innerText = player1.score;
-        wordWOF.uniqueCharCount--;
-
-        //if all the letters have been guessed
-        if (wordWOF.uniqueCharCount === 1) {
-            letterResults.innerText = "CONGRATS";
-            resultShow.innerText = "CONGRATS";   
-            userInput.style.display = "none";
-            anotherRoundDiv.style.display = "flex";
-            // solveInputField.value = "";
-        }
-
-    };
-
-    //Reduce health function needed when no words found, bankrupt, lose a Turn
-    const reduceHealth = () => {
-        player1.health--;
-        healthBoard.innerText = player1.health;
-        if (player1.health <=0) {
-            userInput.style.display = "none";
-            startButton.style.display = "none";   
-            anotherRoundDiv.style.display = "flex";
-        }
-    }
-
-    //What to do if the guessed letter (vowels or consonants) is not found
-    const noLettersFound = (letterInput) => {
-        //const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
-        const letterDropDown = document.querySelector("#letter"+letterInput);        
-        letterResults.innerText = "No "+letterInput+" found!";
-        reduceHealth();
-
-        if (player1.health > 0) {
-            letterDropDown.remove();
-            userInput.style.display = "none";
-            startButton.style.display = "flex";
-            spinAgainDiv.style.display = "none";
-            consonantDiv.style.display = "block";
-            scoreBoard.innerText = player1.score;               
-        }
-    }
-
-    const playAgainGame = () => {
-        const squares = document.querySelectorAll(".square");
-        
-        for (const square of squares) {
-            square.innerText = "";
-            square.style["background-color"] = "#ffd900";
-            square.setAttribute("letter","");
-        }
-
-        randomNumber = Math.floor(Math.random()*originalWord.length);
-        wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
-        originalWord.splice(randomNumber, 1);
-        wordWOF.arrangeLetters();
-        wordWOF.setCategory();
-        anotherRoundDiv.style.display = "none";
-        startButton.style.display = "flex";
-        userInput.style.display = "none";
-        spinAgainDiv.style.display = "none";
-        consonantDiv.style.display = "block";
-        vowelDiv.style.visibility = "visible";
-        resultShow.innerText = "";
-        letterResults.innerText = "";
-        player1.score = 0;
-        scoreBoard.innerText = player1.score;
-        player1.health = 3;
-        healthBoard.innerText = player1.health;
-        rebuildDropDown();
-    }
-   
-
-
+  
     //Animation for the spinning of the wheel. 
     //pointerdown and pointerup is there so that we can calculate the number of seconds the button is stayed press
     startButton.addEventListener("pointerdown", (event) => {
@@ -353,140 +359,152 @@ function init(name,isTurn, indexWordInput) {
         }, 400);
     });
 
+    //spinWheel function
+    function spinWheel(spinDeg) {
+        // Calculate a new rotation which depends on how long one presses the button plus some randomness
+        deg = Math.floor(spinDeg);
+        // Set the transition on the wheel
+        wheel.style.transition = 'all 1s ease-out';
+        // Rotate the wheel
+        wheel.style.transform = `rotate(${deg}deg)`;
+        // Apply the blur, so that it looks cool while the wheel is spinning
+        wheel.classList.add('blur');    
+        clearInterval(timerInterval);
+        timer=0;
+    }
+
     startButton.addEventListener("pointerup", (event) => {
         //console.log(event.type);
             // We need to disable the button while the wheel is spinning
         startButton.style.pointerEvents = "none";
-            // Calculate a new rotation which depends on how long one presses the button plus some randomness
-        deg = Math.floor(timer*1000+Math.floor(Math.random()*700)+360);
-            // Set the transition on the wheel
-        wheel.style.transition = 'all 1s ease-out';
-            // Rotate the wheel
-        wheel.style.transform = `rotate(${deg}deg)`;
-            // Apply the blur, so that it looks cool while the wheel is spinning
-        wheel.classList.add('blur');
-        clearInterval(timerInterval);
-        timer=0;
-    });
-  
-    //what should the programme do after the wheel has finished its animation
-    wheel.addEventListener('transitionend', () => {
-      // Remove blur
-      wheel.classList.remove('blur');
-      // Enable button when spin is over
-      startButton.style.pointerEvents = 'auto';
-      // Need to set transition to none as we want to rotate instantly
-      wheel.style.transition = 'none';
-      // Calculate degree on a 360 degree basis to get the real rotation
-      // Important because we want to start the next spin from that one
-      // Use modulus to get the rest value from 360
-      const actualDeg = deg % 360;
-      // Set the real rotation instantly without animation
-      wheel.style.transform = `rotate(${actualDeg}deg)`;
-      //Calculate and display the chosen segment;
-      const tempResult = chosenSegment(actualDeg);       
-      if (tempResult == "bankrupt") {
-        //console.log(tempResult);
-        reduceHealth();
-        player1.score = 0;
-        scoreBoard.innerText = player1.score;   
-
-      } else if (tempResult == "freeSpin") {
-        player1.health++;
-        healthBoard.innerText = player1.health;
-        letterResults.innerText = "Health Gained!";  
-
-      } else if (tempResult == "loseATurn") {
-        reduceHealth();
-        letterResults.innerText = "Health Lost!";  
-
-      } else {
-        startButton.style.display = "none";      
-        userInput.style.display = "flex";
-      }
-      
+        let timerSpin1 = timer*1000+Math.floor(Math.random()*700)+360;
+        
+        socket.emit("spinWheelTimer", timerSpin1);        
     });
 
-    consonantButton.addEventListener('click', () => {
-        let consonantInput = document.querySelector("#consonantValue").value;
-        consonantInput = consonantInput.toUpperCase();
-        if (wordWOF.letters.indexOf(consonantInput) > -1) {
-            showLettersFound(consonantInput);            
-            consonantDiv.style.display = "none";
-            spinAgainDiv.style.display = "flex";
-        } else {
-            noLettersFound(consonantInput);            
-        }
+    socket.on("timerReturn", (timerReturn) => {
+        spinWheel(timerReturn);
 
-    });
-
-    vowelButton.addEventListener('click', () => {
-        let vowelInput = document.querySelector('#vowelValue').value;
-        vowelInput = vowelInput.toUpperCase();
-        if (player1.score >= 250) {
-            player1.score = player1.score - 250;
-            if (wordWOF.letters.indexOf(vowelInput) > -1) {
-                showLettersFound(vowelInput);                                      
+        //what should the programme do after the wheel has finished its animation
+        wheel.addEventListener('transitionend', () => {
+            // Remove blur
+            wheel.classList.remove('blur');
+            // Enable button when spin is over
+            startButton.style.pointerEvents = 'auto';
+            // Need to set transition to none as we want to rotate instantly
+            wheel.style.transition = 'none';
+            // Calculate degree on a 360 degree basis to get the real rotation
+            // Important because we want to start the next spin from that one
+            // Use modulus to get the rest value from 360
+            const actualDeg = deg % 360;
+            // Set the real rotation instantly without animation
+            wheel.style.transform = `rotate(${actualDeg}deg)`;
+            //Calculate and display the chosen segment;
+            const tempResult = chosenSegment(actualDeg);       
+            if (tempResult == "bankrupt") {
+            //console.log(tempResult);
+            reduceHealth();
+            player1.score = 0;
+            scoreBoard.innerText = player1.score;   
+    
+            } else if (tempResult == "freeSpin") {
+            player1.health++;
+            healthBoard.innerText = player1.health;
+            letterResults.innerText = "Health Gained!";  
+    
+            } else if (tempResult == "loseATurn") {
+            reduceHealth();
+            letterResults.innerText = "Health Lost!";  
+    
             } else {
-                noLettersFound(vowelInput);                              
+            startButton.style.display = "none";      
+            userInput.style.display = "flex";
             }
-            let vowelDropDown = document.querySelector('#vowelValue').childElementCount;
-            //console.log(vowelDropDown);
-            if (vowelDropDown < 1) {
-                vowelDiv.style.visibility = "hidden";
+            
+        });
+    
+        consonantButton.addEventListener('click', () => {
+            let consonantInput = document.querySelector("#consonantValue").value;
+            consonantInput = consonantInput.toUpperCase();
+            if (wordWOF.letters.indexOf(consonantInput) > -1) {
+                showLettersFound(consonantInput);            
+                consonantDiv.style.display = "none";
+                spinAgainDiv.style.display = "flex";
+            } else {
+                noLettersFound(consonantInput);            
             }
-
-        } else {
-            letterResults.innerText = "Can't buy vowel"
-        }
-
-    });
-
-    spinagainButton.addEventListener('click', () => {
-        spinAgainDiv.style.display = "none";
-        consonantDiv.style.display = "block";
-        userInput.style.display = "none";
-        startButton.style.display = "flex";     
-    });
-
-    solveButton.addEventListener('click', () => {
-        let solveInputField = document.querySelector("#solveValue");
-        const solveInput = solveInputField.value.toUpperCase();
-        if (solveInput === wordWOF.letters) {
-            player1.updateAccScore();
-            accScoreBoard.innerText = player1.accScore;
-            for (let i=0; i<solveInput.length; i++) {
-                if (solveInput[i] !== " ") {                    
-                    const lettersFound = document.querySelectorAll("[letter ="+solveInput[i]+"]");
-                    for (const letter of lettersFound) {
-                        letter.innerText = solveInput[i];
-                        letter.style["background-color"] = "white";                
+    
+        });
+    
+        vowelButton.addEventListener('click', () => {
+            let vowelInput = document.querySelector('#vowelValue').value;
+            vowelInput = vowelInput.toUpperCase();
+            if (player1.score >= 250) {
+                player1.score = player1.score - 250;
+                if (wordWOF.letters.indexOf(vowelInput) > -1) {
+                    showLettersFound(vowelInput);                                      
+                } else {
+                    noLettersFound(vowelInput);                              
+                }
+                let vowelDropDown = document.querySelector('#vowelValue').childElementCount;
+                //console.log(vowelDropDown);
+                if (vowelDropDown < 1) {
+                    vowelDiv.style.visibility = "hidden";
+                }
+    
+            } else {
+                letterResults.innerText = "Can't buy vowel"
+            }
+    
+        });
+    
+        spinagainButton.addEventListener('click', () => {
+            spinAgainDiv.style.display = "none";
+            consonantDiv.style.display = "block";
+            userInput.style.display = "none";
+            startButton.style.display = "flex";     
+        });
+    
+        solveButton.addEventListener('click', () => {
+            let solveInputField = document.querySelector("#solveValue");
+            const solveInput = solveInputField.value.toUpperCase();
+            if (solveInput === wordWOF.letters) {
+                player1.updateAccScore();
+                accScoreBoard.innerText = player1.accScore;
+                for (let i=0; i<solveInput.length; i++) {
+                    if (solveInput[i] !== " ") {                    
+                        const lettersFound = document.querySelectorAll("[letter ="+solveInput[i]+"]");
+                        for (const letter of lettersFound) {
+                            letter.innerText = solveInput[i];
+                            letter.style["background-color"] = "white";                
+                        }
                     }
                 }
-            }
-
-            letterResults.innerText = "CONGRATS";
-            resultShow.innerText = "CONGRATS";   
-            userInput.style.display = "none";
-            anotherRoundDiv.style.display = "flex";
-            solveInputField.value = "";
-
-        } else {
-            letterResults.innerText = "Wrong solve!";
-            reduceHealth();
-            solveInputField.value = "";
-
-            if (player1.health > 0) {
+    
+                letterResults.innerText = "CONGRATS";
+                resultShow.innerText = "CONGRATS";   
                 userInput.style.display = "none";
-                startButton.style.display = "flex";
-                spinAgainDiv.style.display = "none";
-                consonantDiv.style.display = "block";
-                scoreBoard.innerText = player1.score;
-            }
-        }                       
+                anotherRoundDiv.style.display = "flex";
+                solveInputField.value = "";
+    
+            } else {
+                letterResults.innerText = "Wrong solve!";
+                reduceHealth();
+                solveInputField.value = "";
+    
+                if (player1.health > 0) {
+                    userInput.style.display = "none";
+                    startButton.style.display = "flex";
+                    spinAgainDiv.style.display = "none";
+                    consonantDiv.style.display = "block";
+                    scoreBoard.innerText = player1.score;
+                }
+            }                       
+    
+        }); //end of solve button
 
-    }); //end of solve button
-
+    });   
+  
     playAgainButton.addEventListener('click', playAgainGame); //end of play again button
 
 }

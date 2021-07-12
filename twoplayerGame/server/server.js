@@ -21,7 +21,9 @@ server.listen(port, ()=> {
 });
 
 const state = {};
+const roomClients = {};
 const clientRooms = {};
+
 
 
 io.on('connection', (socket) => {
@@ -31,7 +33,8 @@ io.on('connection', (socket) => {
     })
 
     socket.on("newGame", () => {
-        let roomName = makeId(5);
+        let roomName = makeId(5);             
+        roomClients[roomName] = [socket.id];
         clientRooms[socket.id] = roomName;
         socket.emit('gameCode',roomName);
         socket.join(roomName);
@@ -40,28 +43,37 @@ io.on('connection', (socket) => {
     });
 
     socket.on("joinGame", (data) => {
-        console.log(data);
         
+        roomClients[data.codeFrmClient].push(socket.id);
         clientRooms[socket.id] = data.codeFrmClient;
+        console.log("room name: "+data.codeFrmClient);
+        console.log(roomClients);
         socket.join(data.codeFrmClient);
         socket.number = 2;
         socket.emit("init", 2);
+        const randomIndexWord = Math.floor(Math.random()*data.totalWords);
         
+
         // io.emit("indexOfWord", Math.floor(Math.random()*data.totalWords));           
-        io.to(Object.keys(clientRooms)[0]).emit("playerData", {
-            indexWord: Math.floor(Math.random()*data.totalWords),
-            clientID: Object.keys(clientRooms)[0],
+        io.to(roomClients[data.codeFrmClient][0]).emit("playerData", {
+            indexWord: randomIndexWord,
+            clientID: roomClients[data.codeFrmClient][0],
             playerTurn: true,
         });
         
-        io.to(Object.keys(clientRooms)[1]).emit("playerData", {
-            indexWord: Math.floor(Math.random()*data.totalWords),
-            clientID: Object.keys(clientRooms)[1],
+        io.to(roomClients[data.codeFrmClient][1]).emit("playerData", {
+            indexWord: randomIndexWord,
+            clientID: roomClients[data.codeFrmClient][1],
             playerTurn: false,
         });
-
+        
         
 
+    });
+
+    socket.on("spinWheelTimer", (timer) => {
+        console.log("timer from client: "+timer);
+        io.in(clientRooms[socket.id]).emit("timerReturn",timer);
     });
 
 });

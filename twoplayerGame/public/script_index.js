@@ -1,6 +1,6 @@
-//add socket
-const socket = io("http://localhost:3000");
-socket.on("connection");
+// //add socket
+// const socket = io("http://localhost:3000");
+// socket.on("connection");
 
 
 //animate the navigation bar
@@ -55,3 +55,5 @@ socket.on("playerData", (data) => {
     }
     
 });
+
+socket.on("start", (msg) => console.log(msg));
