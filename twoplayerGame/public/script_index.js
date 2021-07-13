@@ -51,7 +51,7 @@ socket.on("playerData", (data) => {
     playerDiv.style.display = "block";
     
     init(data.indexWord);
-    player1 = new Player(data.clientID, data.playerID,data.playerTurn);
+    player1 = new Player(data.clientID, data.playerID, data.playerTurn);
     playGame(player1);
 
     if (data.playerTurn) {
