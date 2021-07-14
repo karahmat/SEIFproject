@@ -1,5 +1,5 @@
 //add socket
-const socket = io("http://localhost:3000");
+const socket = io();
 socket.on("connection");
 
 class Word {
@@ -605,10 +605,11 @@ function playGame(playerArg) {
 
             letterResults.innerText = "SOLVED";
             resultShow.innerText = "SOLVED";   
-            userInput.style.display = "none";
-            anotherRoundDiv.style.display = "flex";
+            userInput.style.display = "none";            
             solveInputField.value = "";
-            
+            if (playerArg.isTurn) {
+                anotherRoundDiv.style.display = "flex";
+            }            
 
         } else {
             letterResults.innerText = "Wrong solve!";
@@ -643,6 +644,7 @@ function playGame(playerArg) {
         originalWord.splice(indexWord, 1);
         wordWOF.arrangeLetters();
         wordWOF.setCategory();
+        wordWOF.getUniqueLetters();
 
         anotherRoundDiv.style.display = "none";
 
