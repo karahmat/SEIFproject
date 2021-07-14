@@ -77,7 +77,8 @@ io.on('connection', (socket) => {
         io.in(clientRooms[socket.id]).emit("timerReturn",timer);
     });
 
-    socket.on("updateScore", (scores) => {        
+    socket.on("updateScore", (scores) => {
+        console.log("updateScore " + socket.id);           
         io.in(clientRooms[socket.id]).emit("otherPlayerScore",scores);
     });
 
@@ -88,17 +89,27 @@ io.on('connection', (socket) => {
     });
 
               
-    socket.on("client",(letter) => {
+    socket.on("consonant",(letter) => {
         console.log(socket.id + " " + letter);
-        io.in(clientRooms[socket.id]).emit("letterServer",letter);
+        io.in(clientRooms[socket.id]).emit("consonantServer",letter);
     });
     
-
     
     socket.on("vowel",(vowelLetter) => {
         console.log(socket.id + " " + vowelLetter);
         io.in(clientRooms[socket.id]).emit("vowelServer",vowelLetter);
-    })
+    });
+
+    socket.on("solveValue", (solveInput) => {
+        console.log("solve "+socket.id);
+        io.in(clientRooms[socket.id]).emit("solveInputFromServer",solveInput);
+    });
+
+    socket.on("playAgainRandomNo", (playAgainWordsLength) => {
+        const randomNoPlayAgain = Math.floor(Math.random()*playAgainWordsLength);
+        io.in(clientRooms[socket.id]).emit("playAgainIndexWord",randomNoPlayAgain);
+
+    });
        
 
 });

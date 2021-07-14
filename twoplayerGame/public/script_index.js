@@ -18,9 +18,7 @@ const newGameButton = document.querySelector("#newGameButton");
 const joinGameButton = document.querySelector("#joinGameButton");
 const gameCodeInput = document.querySelector("#gameCodeInput");
 const gameCodeDisplay = document.querySelector("#gameCodeDisplay");
-const playerDiv = document.querySelector("#player");
-let player1;
-let wordWOF;
+
 
 newGameButton.addEventListener("click", () => {
     socket.emit("newGame");
@@ -57,7 +55,7 @@ socket.on("playerData", (data) => {
     if (data.playerTurn) {
         playerDiv.innerText = "MY TURN";                
     } else {
-        playerDiv.innerText = "NOT MY TURN";
+        playerDiv.innerText = "OPP'S TURN";
     }
     
 });

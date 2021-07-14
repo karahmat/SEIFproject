@@ -23,8 +23,9 @@ class Word {
             this.uniqueCharCount++;
             }
         }
-
-        
+        if (this.uniqueChar.includes(" ")) {
+            this.uniqueCharCount--;
+        }      
 
         for (let i=0; i<this.uniqueChar.length; i++) {
             let indices = [];
@@ -120,7 +121,10 @@ const spinAgainDiv = document.querySelector(".spinAgain");
 const spinagainButton = document.querySelector("#spinagainButton");
 const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
 const playAgainButton = document.querySelector("#playAgainButton");
-
+const playerDiv = document.querySelector("#player");
+const solveInputField = document.querySelector("#solveValue");
+let wordWOF;
+let player1;
 
 function makeSquares() {
     const noRows = 5;
@@ -239,20 +243,22 @@ function togglePlayer(playerInput) {
 
     socket.removeAllListeners("toggleFromServer");
     socket.on("toggleFromServer", () => {
-        console.log("here: "+playerInput.isTurn);
+        console.log("socketOn - ToggleFromServer: "+playerInput.isTurn);
         if (playerInput.isTurn) {
             playerInput.isTurn = false;
+            playerDiv.innerText = "OPP'S TURN";
         } else {
             playerInput.isTurn = true;
+            playerDiv.innerText = "MY TURN";
         }
         playGame(playerInput);
     });
          
 }
 
-let timer = 0;
 let timerInterval;
-let deg = 0; 
+let timer;
+let deg;
 
 function updateScore(playerInput) {
     const scoreBoard1 = document.querySelector(".p1-score");
@@ -263,7 +269,7 @@ function updateScore(playerInput) {
     const accScoreBoard2 = document.querySelector(".p2-accScore");
     
     if (playerInput.isTurn) {
-        socket.removeAllListeners("updateScore");
+        //socket.removeAllListeners("updateScore");
         socket.emit("updateScore", {
             health: playerInput.health, 
             score: playerInput.score, 
@@ -272,10 +278,8 @@ function updateScore(playerInput) {
     }
 
     socket.removeAllListeners("otherPlayerScore");
-    socket.on("otherPlayerScore", (scores) => {
-        
-        console.log(playerInput.name);
-
+    socket.on("otherPlayerScore", (scores) => {      
+        console.log("socket on OtherPlayerScores: "+scores.score);
         if (playerInput.isTurn) {
             healthBoard1.innerText = scores.health;
             scoreBoard1.innerText = scores.score;
@@ -288,14 +292,15 @@ function updateScore(playerInput) {
     });
 }
 
-function startButtonFnc() {
-    
+function startButtonFnc() {    
+    timer = 0;
     resultShow.innerText = "-";
     letterResults.innerText = "-";
     timerInterval = setInterval( () => {
         timer = timer + 0.5;
         console.log(timer);
     }, 400);
+    console.log("in startbuttonFnc: "+ timerInterval);
 }
 
 function startButtonPointerUp() {
@@ -309,9 +314,8 @@ function startButtonPointerUp() {
 
 function consonantClick() {        
     const letterInput1 = document.querySelector("#consonantValue").value;
-    socket.removeAllListeners("client");            
-    socket.emit("client",letterInput1);
-    console.log("emitted from button");                            
+    //socket.removeAllListeners("client");            
+    socket.emit("consonant",letterInput1);    
 }
 
 function isVowel (letterInput) {      
@@ -329,19 +333,21 @@ const vowelButtonClick = function() {
     
     if (player1.isTurn) {
         scoreBoardValue = parseInt(scoreBoard1.innerText);
+        if (scoreBoardValue >= 250) {
+            player1.score = player1.score - 250;
+            socket.removeAllListeners("vowel");
+            socket.emit("vowel",vowelInput);             
+            updateScore(player1);
+                                 
+        } else {
+            letterResults.innerText = "Can't buy vowel"
+        }
+
     } else {
         scoreBoardValue = parseInt(scoreBoard2.innerText);
     }
 
-    if (scoreBoardValue >= 250) {
-        player1.score = player1.score - 250;
-        socket.removeAllListeners("vowel");
-        socket.emit("vowel",vowelInput);             
-        updateScore(player1);
-                             
-    } else {
-        letterResults.innerText = "Can't buy vowel"
-    }         
+       
 
     //socket.removeAllListeners("vowelServer");
     
@@ -350,6 +356,7 @@ const vowelButtonClick = function() {
 
 //spinWheel function
 function spinWheel(spinDeg) {
+    
     // Calculate a new rotation which depends on how long one presses the button plus some randomness
     deg = Math.floor(spinDeg);
     // Set the transition on the wheel
@@ -357,12 +364,13 @@ function spinWheel(spinDeg) {
     // Rotate the wheel
     wheel.style.transform = `rotate(${deg}deg)`;
     // Apply the blur, so that it looks cool while the wheel is spinning
-    wheel.classList.add('blur');    
+    wheel.classList.add('blur');
+    console.log("in spinWheel: "+ timerInterval);    
     clearInterval(timerInterval);
     timer=0;
 }
 
-function transitionEndFnc(playerTransition) {
+function transitionEndFnc() {
     // Remove blur
     wheel.classList.remove('blur');
     // Enable button when spin is over
@@ -381,30 +389,30 @@ function transitionEndFnc(playerTransition) {
     
     if (tempResult == "bankrupt") {
         //console.log(tempResult);
-        if (playerTransition.isTurn) {
-            playerTransition.score = 0;
+        if (player1.isTurn) {
+            player1.score = 0;
             console.log("bankrupt called!");
-            updateScore(playerTransition);  
-            togglePlayer(playerTransition);
+            updateScore(player1);  
+            togglePlayer(player1);
         } else {
-            togglePlayer(playerTransition);
+            togglePlayer(player1);
         }
         
         
 
     } else if (tempResult == "freeSpin") {
-        if (playerTransition.isTurn) {
-            playerTransition.health++;
+        if (player1.isTurn) {
+            player1.health++;
             letterResults.innerText = "Health Gained!";
-            updateScore(playerTransition);  
+            updateScore(player1);  
         }                
           
 
     } else if (tempResult == "loseATurn") {
-            togglePlayer(playerTransition);
+            togglePlayer(player1);
     
     } else {
-        if (playerTransition.isTurn) {
+        if (player1.isTurn) {
             startButton.style.display = "none";      
             userInput.style.display = "flex";
         } else {
@@ -451,18 +459,23 @@ function showLettersFound(playerInput, letterInput){
   
 
     if (isVowel(letterInput) === false) {
-        playerInput.score = playerInput.score + parseInt(resultShow.innerText)*lettersFound.length;
+        if (playerInput.isTurn) {
+            playerInput.score = playerInput.score + parseInt(resultShow.innerText)*lettersFound.length;
+        }
+
         updateScore(playerInput);  
     }
         
     wordWOF.uniqueCharCount--;
 
     //if all the letters have been guessed
-    if (wordWOF.uniqueCharCount === 1) {
-        letterResults.innerText = "CONGRATS";
-        resultShow.innerText = "CONGRATS";   
+    if (wordWOF.uniqueCharCount === 0) {
+        letterResults.innerText = "SOLVED";
+        resultShow.innerText = "SOLVED";   
         userInput.style.display = "none";
-        anotherRoundDiv.style.display = "flex";
+        if (player1.isTurn) {
+            anotherRoundDiv.style.display = "flex";
+        }
             // solveInputField.value = "";
     }
 
@@ -483,10 +496,17 @@ function noLettersFound(playerNoLetters,letterInput) {
        
 }
 
+function solveButtonClick() {    
+    socket.emit("solveValue",solveInputField.value.toUpperCase());
+}
 
+function playAgainGame() {    
+    socket.emit("playAgainRandomNo", originalWord.length);    
+}
 
 ////==========////
 //==========
+//==============
 
 function playGame(playerArg) {
    
@@ -514,8 +534,8 @@ function playGame(playerArg) {
         spinWheel(timerReturn);
 
         //what should the programme do after the wheel has finished its animation
-        //wheel.removeEventListener('transitionend', transitionEndFnc(playerArg));
-        wheel.addEventListener('transitionend', transitionEndFnc(playerArg));
+        wheel.removeEventListener('transitionend', transitionEndFnc);
+        wheel.addEventListener('transitionend', transitionEndFnc);
         
     });      
 
@@ -523,8 +543,8 @@ function playGame(playerArg) {
     consonantButton.removeEventListener('click',consonantClick);
     consonantButton.addEventListener('click', consonantClick);
     
-    socket.removeAllListeners("letterServer");
-    socket.on("letterServer", (letterValue1) => {
+    socket.removeAllListeners("consonantServer");
+    socket.on("consonantServer", (letterValue1) => {
         console.log("after socket on: "+letterValue1);
         console.log(wordWOF.letters.indexOf(letterValue1));
         if (wordWOF.letters.indexOf(letterValue1) > -1) {                
@@ -544,6 +564,7 @@ function playGame(playerArg) {
     socket.removeAllListeners("vowelServer");
     socket.on("vowelServer",(vowelValue) => {
         console.log("vowelserver is called!");
+        
         if (wordWOF.letters.indexOf(vowelValue) > -1) {
             showLettersFound(playerArg, vowelValue);                                    
         } else {
@@ -559,81 +580,96 @@ function playGame(playerArg) {
     spinagainButton.removeEventListener('click', spinagainClick);
     spinagainButton.addEventListener('click', spinagainClick);
     
-
+    solveButton.removeEventListener('click', solveButtonClick); //end of solve button
+    solveButton.addEventListener('click', solveButtonClick); //end of solve button
     
-        solveButton.addEventListener('click', () => {
-            let solveInputField = document.querySelector("#solveValue");
-            const solveInput = solveInputField.value.toUpperCase();
-            if (solveInput === wordWOF.letters) {
-                playerArg.updateAccScore();
-                accScoreBoard.innerText = playerArg.accScore;
-                for (let i=0; i<solveInput.length; i++) {
-                    if (solveInput[i] !== " ") {                    
-                        const lettersFound = document.querySelectorAll("[letter ="+solveInput[i]+"]");
-                        for (const letter of lettersFound) {
-                            letter.innerText = solveInput[i];
-                            letter.style["background-color"] = "white";                
-                        }
+    socket.removeAllListeners("solveInputFromServer");
+    socket.on("solveInputFromServer", (solveInput) => {
+        console.log("solveInputFromServer returns "+solveInput);
+        if (solveInput === wordWOF.letters) {
+
+            if (playerArg.isTurn) {
+                playerArg.updateAccScore();                                   
+            }
+            updateScore(playerArg);
+
+            for (let i=0; i<solveInput.length; i++) {
+                if (solveInput[i] !== " ") {                    
+                    const lettersFound = document.querySelectorAll("[letter ="+solveInput[i]+"]");
+                    for (const letter of lettersFound) {
+                        letter.innerText = solveInput[i];
+                        letter.style["background-color"] = "white";                
                     }
                 }
-    
-                letterResults.innerText = "CONGRATS";
-                resultShow.innerText = "CONGRATS";   
-                userInput.style.display = "none";
-                anotherRoundDiv.style.display = "flex";
-                solveInputField.value = "";
-    
-            } else {
-                letterResults.innerText = "Wrong solve!";
-                togglePlayer(playerArg);
-                solveInputField.value = "";
-    
-                if (playerArg.health > 0) {
-                    userInput.style.display = "none";
-                    startButton.style.display = "flex";
-                    spinAgainDiv.style.display = "none";
-                    consonantDiv.style.display = "block";
-                    scoreBoard.innerText = playerArg.score;
-                }
-            }                       
-    
-        }); //end of solve button
+            }
 
-     
+            letterResults.innerText = "SOLVED";
+            resultShow.innerText = "SOLVED";   
+            userInput.style.display = "none";
+            anotherRoundDiv.style.display = "flex";
+            solveInputField.value = "";
+            
+
+        } else {
+            letterResults.innerText = "Wrong solve!";
+            togglePlayer(playerArg);
+            solveInputField.value = "";
     
-    const playAgainGame = (playerArg) => {
+            userInput.style.display = "none";
+            startButton.style.display = "flex";
+            spinAgainDiv.style.display = "none";
+            consonantDiv.style.display = "block";            
+        }                       
+
+    });
+
+    playAgainButton.removeEventListener('click', playAgainGame); //end of play again button
+    playAgainButton.addEventListener('click', playAgainGame); //end of play again button
+
+    socket.removeAllListeners("playAgainIndexWord");
+    socket.on("playAgainIndexWord", (indexWord) => {
+        console.log("playAgainIndexWord is called "+originalWord[indexWord].title);
         const squares = document.querySelectorAll(".square");
-        
+    
         for (const square of squares) {
             square.innerText = "";
             square.style["background-color"] = "#ffd900";
             square.setAttribute("letter","");
         }
 
-        randomNumber = Math.floor(Math.random()*originalWord.length);
-        wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
-        originalWord.splice(randomNumber, 1);
+        letterResults.innerText = "NEW RD";
+        resultShow.innerText = "NEW RD";   
+        wordWOF = new Word(originalWord[indexWord].title, originalWord[indexWord].category);
+        originalWord.splice(indexWord, 1);
         wordWOF.arrangeLetters();
         wordWOF.setCategory();
 
         anotherRoundDiv.style.display = "none";
-        startButton.style.display = "flex";
+
+        if (playerArg.isTurn) {
+            startButton.style.display = "flex";
+        } else {
+            startButton.style.display = "none";
+        }
+
         userInput.style.display = "none";
         spinAgainDiv.style.display = "none";
         consonantDiv.style.display = "block";
-        vowelDiv.style.visibility = "visible";
-        resultShow.innerText = "";
-        letterResults.innerText = "";
+        vowelDiv.style.visibility = "visible";        
 
-        playerArg.score = 0;        
+        playerArg.score = 0;             
         playerArg.health = 0;
         updateScore(playerArg);
-
-        scoreBoard.innerText = playerArg.score;
-        healthBoard.innerText = playerArg.health;
+        
+        if (playerArg.isTurn){
+            scoreBoard2.innerText = 0;
+            healthBoard2.innerText = 0;
+        } else {
+            scoreBoard1.innerText = 0;
+            healthBoard1.innerText = 0;
+        }
+        
         rebuildDropDown();
-    }
 
-    playAgainButton.addEventListener('click', playAgainGame); //end of play again button
-
+    });
 }
