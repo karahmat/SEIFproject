@@ -95,9 +95,198 @@ class Player {
 
     updateAccScore() {
         this.accScore = this.accScore + this.score;
-    }   
+    }
+    
+    updateScore() {
+        const scoreBoard1 = document.querySelector(".p1-score");
+        const healthBoard1 = document.querySelector(".p1-health");
+        const accScoreBoard1 = document.querySelector(".p1-accScore");
+        const scoreBoard2 = document.querySelector(".p2-score");
+        const healthBoard2 = document.querySelector(".p2-health");
+        const accScoreBoard2 = document.querySelector(".p2-accScore");
+        
+        if (this.isTurn) {
+            //socket.removeAllListeners("updateScore");
+            socket.emit("updateScore", {
+                health: this.health, 
+                score: this.score, 
+                accScore: this.accScore}
+            );
+        }
+
+        socket.removeAllListeners("otherPlayerScore");
+        socket.on("otherPlayerScore", (scores) => {      
+            console.log("socket on OtherPlayerScores: "+scores.score);
+            if (this.isTurn) {
+                healthBoard1.innerText = scores.health;
+                scoreBoard1.innerText = scores.score;
+                accScoreBoard1.innerText = scores.accScore;
+            } else {
+                healthBoard2.innerText = scores.health;
+                scoreBoard2.innerText = scores.score;
+                accScoreBoard2.innerText = scores.accScore;
+            }
+        });
+
+    } //end of updateScore
+
+    togglePlayer() {
+        const playerDiv = document.querySelector("#player");
+
+        //socket.removeAllListeners("togglePlayer");    
+        if (this.isTurn) {
+            socket.emit("togglePlayer");
+        }
+    
+        socket.removeAllListeners("toggleFromServer");
+        socket.on("toggleFromServer", () => {
+            console.log("socketOn - ToggleFromServer: "+this.isTurn);
+            if (this.isTurn) {
+                this.isTurn = false;
+                playerDiv.innerText = "OPP'S TURN";
+            } else {
+                this.isTurn = true;
+                playerDiv.innerText = "MY TURN";
+            }
+            playGame(this);
+        });
+             
+    }
+    
 }
 
+class Wheel {
+    constructor() {        
+        this.symbolSegments = [
+            300,
+            250,
+            750,
+            "bankrupt",
+            300,
+            250,
+            600,
+            400,
+            150,
+            200,
+            250,
+            400,
+            "loseATurn",
+            450,
+            150,
+            200,
+            100,
+            "freeSpin",
+            200,
+            300,
+            400,
+            500,
+            100,
+            200
+        ];
+        
+        this.timerInterval = 0;
+        this.timer = 0;
+        this.deg = 0;
+        this.timerSpin1 = 0;
+        this.spinDeg = 0;
+        this.actualDeg = 0;        
+        this.chosenSlice = "";                  
+
+    } //end of constructor
+ 
+
+    pressButton() {
+        const resultShow = document.querySelector(".results");
+        const letterResults = document.querySelector(".letter-results");
+        resultShow.innerText = "-";
+        letterResults.innerText = "-";        
+        this.timerInterval = setInterval( () => {
+        this.timer = this.timer + 0.5;}, 400);
+        console.log("timer: "+ this.timerInterval);
+    }
+
+    liftButton() {
+        this.timerSpin1 = this.timer*1000+Math.floor(Math.random()*700)+360;
+    }
+
+    spinWheel() {
+              
+        // Calculate a new rotation which depends on how long one presses the button plus some randomness
+        this.deg = Math.floor(this.spinDeg);
+        // Set the transition on the wheel
+        wheel.style.transition = 'all 2s ease-out';
+        // Rotate the wheel
+        wheel.style.transform = `rotate(${this.deg}deg)`;
+        // Apply the blur, so that it looks cool while the wheel is spinning
+        wheel.classList.add('blur');          
+        clearInterval(this.timerInterval);
+        this.timer=0;
+        //what should the programme do after the wheel has finished its animation                
+    }
+
+    transitionEnd() {
+        
+        const startButton = document.querySelector("#spinButton-container");
+        const letterResults = document.querySelector(".letter-results");        
+        const userInput = document.querySelector("#user-input");
+        const resultShow = document.querySelector(".results");
+
+        //blur the wheel
+        wheel.classList.remove('blur');
+        // Enable button when spin is over
+        startButton.style.pointerEvents = 'auto';
+        // Need to set transition to none as we want to rotate instantly
+        wheel.style.transition = 'none';
+        // Calculate degree on a 360 degree basis to get the real rotation
+        // Important because we want to start the next spin from that one
+        // Use modulus to get the rest value from 360
+        const actualDeg = this.deg % 360;
+        // Set the real rotation instantly without animation
+        wheel.style.transform = `rotate(${actualDeg}deg)`;
+        //Calculate and display the chosen segment;
+        console.log(this.symbolSegments);
+        const segmentSize = 360/(this.symbolSegments.length); //deg per segment of the wheel
+        const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
+        this.chosenSlice = this.symbolSegments[winningSegmentNr-1];        
+        resultShow.innerText = this.chosenSlice;
+        
+
+        if (this.chosenSlice == "bankrupt") {
+            //console.log(tempResult);
+            if (player1.isTurn) {
+                player1.score = 0;
+                //console.log("bankrupt called!");
+                player1.updateScore();  
+                player1.togglePlayer();
+            } else {
+                player1.togglePlayer();
+            }
+            
+            
+    
+        } else if (this.chosenSlice == "freeSpin") {
+            if (player1.isTurn) {
+                player1.health++;
+                letterResults.innerText = "Health Gained!";
+                player1.updateScore();  
+            }                
+            
+    
+        } else if (this.chosenSlice == "loseATurn") {
+                player1.togglePlayer();
+        
+        } else {
+            if (player1.isTurn) {
+                startButton.style.display = "none";      
+                userInput.style.display = "flex";
+            } else {
+                userInput.style.display = "none";                    
+            }
+        }    
+    }
+
+         
+}
 
 //DOM elements
 const scoreBoard1 = document.querySelector(".p1-score");
@@ -124,6 +313,7 @@ const playerDiv = document.querySelector("#player");
 const solveInputField = document.querySelector("#solveValue");
 let wordWOF;
 let player1;
+let wheelObj;
 
 function makeSquares() {
     const noRows = 5;
@@ -177,7 +367,6 @@ function rebuildDropDown() {
 } //endOfRebuild function
 
 
-   
 function init(indexWordInput) {
     const formDiv = document.querySelector("#form");
     formDiv.style.display = "none";
@@ -185,7 +374,7 @@ function init(indexWordInput) {
     appDiv.style.display = "block";     
 
     makeSquares();
-      
+    wheelObj = new Wheel();  
     // let randomNumber = Math.floor(Math.random()*originalWord.length);
     wordWOF = new Word(originalWord[indexWordInput].title, originalWord[indexWordInput].category);
     console.log(originalWord[indexWordInput].title);
@@ -197,118 +386,21 @@ function init(indexWordInput) {
     wordWOF.setCategory();            
 }
 
-//wheel characteristics
-const symbolSegments = [
-    300,
-    250,
-    750,
-    "bankrupt",
-    300,
-    250,
-    600,
-    400,
-    150,
-    200,
-    250,
-    400,
-    "loseATurn",
-    450,
-    150,
-    200,
-    100,
-    "freeSpin",
-    200,
-    300,
-    400,
-    500,
-    100,
-    200
-];
-
-let segmentSize = 360/symbolSegments.length; //deg per segment of the wheel
-
-function chosenSegment(actualDeg) {
-    const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
-    resultShow.innerText = symbolSegments[winningSegmentNr-1];
-    return resultShow.innerText;
-};
-
-function togglePlayer(playerInput) {
-
-    //socket.removeAllListeners("togglePlayer");    
-    if (playerInput.isTurn) {
-        socket.emit("togglePlayer");
-    }
-
-    socket.removeAllListeners("toggleFromServer");
-    socket.on("toggleFromServer", () => {
-        console.log("socketOn - ToggleFromServer: "+playerInput.isTurn);
-        if (playerInput.isTurn) {
-            playerInput.isTurn = false;
-            playerDiv.innerText = "OPP'S TURN";
-        } else {
-            playerInput.isTurn = true;
-            playerDiv.innerText = "MY TURN";
-        }
-        playGame(playerInput);
-    });
-         
-}
-
-let timerInterval;
-let timer;
-let deg;
-
-function updateScore(playerInput) {
-    const scoreBoard1 = document.querySelector(".p1-score");
-    const healthBoard1 = document.querySelector(".p1-health");
-    const accScoreBoard1 = document.querySelector(".p1-accScore");
-    const scoreBoard2 = document.querySelector(".p2-score");
-    const healthBoard2 = document.querySelector(".p2-health");
-    const accScoreBoard2 = document.querySelector(".p2-accScore");
-    
-    if (playerInput.isTurn) {
-        //socket.removeAllListeners("updateScore");
-        socket.emit("updateScore", {
-            health: playerInput.health, 
-            score: playerInput.score, 
-            accScore: playerInput.accScore}
-        );
-    }
-
-    socket.removeAllListeners("otherPlayerScore");
-    socket.on("otherPlayerScore", (scores) => {      
-        console.log("socket on OtherPlayerScores: "+scores.score);
-        if (playerInput.isTurn) {
-            healthBoard1.innerText = scores.health;
-            scoreBoard1.innerText = scores.score;
-            accScoreBoard1.innerText = scores.accScore;
-        } else {
-            healthBoard2.innerText = scores.health;
-            scoreBoard2.innerText = scores.score;
-            accScoreBoard2.innerText = scores.accScore;
-        }
-    });
-}
-
-function startButtonFnc() {    
-    timer = 0;
-    resultShow.innerText = "-";
-    letterResults.innerText = "-";
-    timerInterval = setInterval( () => {
-        timer = timer + 0.5;
-        console.log(timer);
-    }, 400);
-    console.log("in startbuttonFnc: "+ timerInterval);
+function startButtonFnc() { 
+    wheelObj.pressButton();   
 }
 
 function startButtonPointerUp() {
     //console.log(event.type);
     // We need to disable the button while the wheel is spinning
     startButton.style.pointerEvents = "none";
-    let timerSpin1 = timer*1000+Math.floor(Math.random()*700)+360;
+    wheelObj.liftButton();    
     socket.removeAllListeners("spinWheelTimer");    
-    socket.emit("spinWheelTimer", timerSpin1);          
+    socket.emit("spinWheelTimer", wheelObj.timerSpin1);          
+}
+
+function transitionEndFnc() {
+    wheelObj.transitionEnd();
 }
 
 function consonantClick() {        
@@ -336,7 +428,7 @@ const vowelButtonClick = function() {
             player1.score = player1.score - 250;
             socket.removeAllListeners("vowel");
             socket.emit("vowel",vowelInput);             
-            updateScore(player1);
+            player1.updateScore();
                                  
         } else {
             letterResults.innerText = "Can't buy vowel"
@@ -348,72 +440,6 @@ const vowelButtonClick = function() {
 
 }
 
-//spinWheel function
-function spinWheel(spinDeg) {
-    
-    // Calculate a new rotation which depends on how long one presses the button plus some randomness
-    deg = Math.floor(spinDeg);
-    // Set the transition on the wheel
-    wheel.style.transition = 'all 1s ease-out';
-    // Rotate the wheel
-    wheel.style.transform = `rotate(${deg}deg)`;
-    // Apply the blur, so that it looks cool while the wheel is spinning
-    wheel.classList.add('blur');
-    console.log("in spinWheel: "+ timerInterval);    
-    clearInterval(timerInterval);
-    timer=0;
-}
-
-function transitionEndFnc() {
-    // Remove blur
-    wheel.classList.remove('blur');
-    // Enable button when spin is over
-    startButton.style.pointerEvents = 'auto';
-    // Need to set transition to none as we want to rotate instantly
-    wheel.style.transition = 'none';
-    // Calculate degree on a 360 degree basis to get the real rotation
-    // Important because we want to start the next spin from that one
-    // Use modulus to get the rest value from 360
-    const actualDeg = deg % 360;
-    // Set the real rotation instantly without animation
-    wheel.style.transform = `rotate(${actualDeg}deg)`;
-    //Calculate and display the chosen segment;
-    const tempResult = chosenSegment(actualDeg);
-    
-    
-    if (tempResult == "bankrupt") {
-        //console.log(tempResult);
-        if (player1.isTurn) {
-            player1.score = 0;
-            console.log("bankrupt called!");
-            updateScore(player1);  
-            togglePlayer(player1);
-        } else {
-            togglePlayer(player1);
-        }
-        
-        
-
-    } else if (tempResult == "freeSpin") {
-        if (player1.isTurn) {
-            player1.health++;
-            letterResults.innerText = "Health Gained!";
-            updateScore(player1);  
-        }                
-          
-
-    } else if (tempResult == "loseATurn") {
-            togglePlayer(player1);
-    
-    } else {
-        if (player1.isTurn) {
-            startButton.style.display = "none";      
-            userInput.style.display = "flex";
-        } else {
-            userInput.style.display = "none";                    
-        }
-    }    
-}
 
 function spinagainClick() {
     spinAgainDiv.style.display = "none";
@@ -457,7 +483,7 @@ function showLettersFound(playerInput, letterInput){
             playerInput.score = playerInput.score + parseInt(resultShow.innerText)*lettersFound.length;
         }
 
-        updateScore(playerInput);  
+        playerInput.updateScore();  
     }
         
     wordWOF.uniqueCharCount--;
@@ -486,14 +512,12 @@ function noLettersFound(playerNoLetters,letterInput) {
     userInput.style.display = "none";    
     spinAgainDiv.style.display = "none";
     consonantDiv.style.display = "block";
-    togglePlayer(playerNoLetters);                
+    playerNoLetters.togglePlayer();                
        
 }
 
-function solveButtonClick() {
-      
+function solveButtonClick() {      
     socket.emit("solveValue",solveInputField.value.toUpperCase());
-
 }
 
 function playAgainGame() {    
@@ -509,7 +533,7 @@ function playGame(playerArg) {
     console.log(playerArg)        
 
     if (playerArg.isTurn) {
-        startButton.style.display = "block";        
+        startButton.style.display = "flex";        
     } else {
         startButton.style.display = "none";        
     }
@@ -525,13 +549,13 @@ function playGame(playerArg) {
     startButton.removeEventListener("pointerup", startButtonPointerUp);
     startButton.addEventListener("pointerup", startButtonPointerUp);
 
+    wheel.removeEventListener('transitionend', transitionEndFnc);
+    wheel.addEventListener('transitionend', transitionEndFnc);
+
     socket.removeAllListeners("timerReturn");
     socket.on("timerReturn", (timerReturn) => {
-        spinWheel(timerReturn);
-
-        //what should the programme do after the wheel has finished its animation
-        wheel.removeEventListener('transitionend', transitionEndFnc);
-        wheel.addEventListener('transitionend', transitionEndFnc);
+        wheelObj.spinDeg = timerReturn;
+        wheelObj.spinWheel();      
         
     });      
 
@@ -587,7 +611,7 @@ function playGame(playerArg) {
             if (playerArg.isTurn) {
                 playerArg.updateAccScore();                                   
             }
-            updateScore(playerArg);
+            playerArg.updateScore();
 
             for (let i=0; i<solveInput.length; i++) {
                 if (solveInput[i] !== " ") {                    
@@ -609,7 +633,7 @@ function playGame(playerArg) {
 
         } else {
             letterResults.innerText = "Wrong solve!";
-            togglePlayer(playerArg);
+            playerArg.togglePlayer();
             solveInputField.value = "";
     
             userInput.style.display = "none";
@@ -657,7 +681,7 @@ function playGame(playerArg) {
 
         playerArg.score = 0;             
         playerArg.health = 0;
-        updateScore(playerArg);
+        playerArg.updateScore();
         
         if (playerArg.isTurn){
             scoreBoard2.innerText = 0;

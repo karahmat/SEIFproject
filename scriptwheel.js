@@ -1,62 +1,4 @@
-
-(function() {
-    const wheel = document.querySelector(".wheel");
-    const startButton = document.querySelector("#spinButton-container");
-    const resultShow = document.querySelector(".results");
-    const userInput = document.querySelector("#user-input");
-    const vowelButton = document.querySelector("#vowelButton");
-    const solveButton = document.querySelector("#solveButton");
-    const consonantButton = document.querySelector("#consonantButton");
-    const letterResults = document.querySelector(".letter-results");
-    const scoreBoard = document.querySelector(".p-score");
-    const healthBoard = document.querySelector(".p-health");
-    const accScoreBoard = document.querySelector(".p-accScore");
-    const consonantDiv = document.querySelector(".consonant");
-    const vowelDiv = document.querySelector(".vowel");
-    const spinAgainDiv = document.querySelector(".spinAgain");
-    const spinagainButton = document.querySelector("#spinagainButton");
-    const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
-    const playAgainButton = document.querySelector("#playAgainButton");
-    const mySound = document.querySelector("audio");
-
-    let timer = 0;
-    let timerInterval;
-    let deg = 0;
-    
-    const symbolSegments = [
-        300,
-        250,
-        750,
-        "bankrupt",
-        300,
-        250,
-        600,
-        400,
-        150,
-        200,
-        250,
-        400,
-        "loseATurn",
-        450,
-        150,
-        200,
-        100,
-        "freeSpin",
-        200,
-        300,
-        400,
-        500,
-        100,
-        200
-    ];
-
-    let segmentSize = 360/symbolSegments.length; //deg per segment of the wheel
-
-    const chosenSegment = (actualDeg) => {
-        const winningSegmentNr = Math.ceil(actualDeg / segmentSize);
-        resultShow.innerText = symbolSegments[winningSegmentNr-1];
-        return resultShow.innerText;
-    };
+(function() {    
 
     const isVowel = (letterInput) => {
         let isVowel = false;
@@ -83,7 +25,7 @@
     }
 
     //What to do if the guessed letter (vowels or consonants) is found
-    const showLettersFound = (letterInput) => {
+    function showLettersFound(letterInput){
         const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
         const letterDropDown = document.querySelector("#letter"+letterInput);
         letterResults.innerText = lettersFound.length + " " + letterInput + " found";
@@ -111,23 +53,13 @@
 
     };
 
-    //Reduce health function needed when no words found, bankrupt, lose a Turn
-    const reduceHealth = () => {
-        player1.health--;
-        healthBoard.innerText = player1.health;
-        if (player1.health <=0) {
-            userInput.style.display = "none";
-            startButton.style.display = "none";   
-            anotherRoundDiv.style.display = "flex";
-        }
-    }
-
+    
     //What to do if the guessed letter (vowels or consonants) is not found
-    const noLettersFound = (letterInput) => {
+    function noLettersFound(letterInput) {
         //const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
         const letterDropDown = document.querySelector("#letter"+letterInput);        
         letterResults.innerText = "No "+letterInput+" found!";
-        reduceHealth();
+        player1.reduceHealth();
 
         if (player1.health > 0) {
             letterDropDown.remove();
@@ -140,7 +72,7 @@
 
     }
 
-    const playAgainGame = () => {
+    function playAgainGame(){
         const squares = document.querySelectorAll(".square");
         
         for (const square of squares) {
@@ -174,69 +106,25 @@
     //Animation for the spinning of the wheel. 
     //pointerdown and pointerup is there so that we can calculate the number of seconds the button is stayed press
     startButton.addEventListener("pointerdown", (event) => {
-        resultShow.innerText = "-";
-        letterResults.innerText = "-";
-        timerInterval = setInterval( () => {
-            timer = timer + 0.5;
-            console.log(timer);
-        }, 400);
+        wheelObj.pressButton();        
     });
 
-    startButton.addEventListener("pointerup", (event) => {
-        //console.log(event.type);
-            // We need to disable the button while the wheel is spinning
+    startButton.addEventListener("pointerup", (event) => {        
+        
+        // We need to disable the button while the wheel is spinning
         startButton.style.pointerEvents = "none";
-            // Calculate a new rotation which depends on how long one presses the button plus some randomness
-        deg = Math.floor(timer*1000+Math.floor(Math.random()*700)+360);
-            // Set the transition on the wheel
-        wheel.style.transition = 'all 1s ease-out';
-            // Rotate the wheel
-        wheel.style.transform = `rotate(${deg}deg)`;
-            // Apply the blur, so that it looks cool while the wheel is spinning
-        wheel.classList.add('blur');
-        clearInterval(timerInterval);
-        timer=0;
+        // Calculate a new rotation which depends on how long one presses the button plus some randomness
+        wheelObj.liftButton();
     });
-  
-    //what should the programme do after the wheel has finished its animation
-    wheel.addEventListener('transitionend', () => {
-      // Remove blur
-      wheel.classList.remove('blur');
-      // Enable button when spin is over
-      startButton.style.pointerEvents = 'auto';
-      // Need to set transition to none as we want to rotate instantly
-      wheel.style.transition = 'none';
-      // Calculate degree on a 360 degree basis to get the real rotation
-      // Important because we want to start the next spin from that one
-      // Use modulus to get the rest value from 360
-      const actualDeg = deg % 360;
-      // Set the real rotation instantly without animation
-      wheel.style.transform = `rotate(${actualDeg}deg)`;
-      //Calculate and display the chosen segment;
-      const tempResult = chosenSegment(actualDeg);       
-      if (tempResult == "bankrupt") {
-        //console.log(tempResult);
-        reduceHealth();
-        player1.score = 0;
-        scoreBoard.innerText = player1.score;   
-
-      } else if (tempResult == "freeSpin") {
-        player1.health++;
-        healthBoard.innerText = player1.health;
-        letterResults.innerText = "Health Gained!";  
-
-      } else if (tempResult == "loseATurn") {
-        reduceHealth();
-        letterResults.innerText = "Health Lost!";  
-
-      } else {
-        startButton.style.display = "none";      
-        userInput.style.display = "flex";
-      }
-      
-    });
+    
+    
+     //what should the programme do after the wheel has finished its animation
+     wheel.removeEventListener('transitionend',transitionEndFnc);
+     wheel.addEventListener('transitionend', transitionEndFnc);
+   
 
     consonantButton.addEventListener('click', () => {
+        
         let consonantInput = document.querySelector("#consonantValue").value;
         consonantInput = consonantInput.toUpperCase();
         if (wordWOF.letters.indexOf(consonantInput) > -1) {
@@ -250,6 +138,7 @@
     });
 
     vowelButton.addEventListener('click', () => {
+        
         let vowelInput = document.querySelector('#vowelValue').value;
         vowelInput = vowelInput.toUpperCase();
         if (player1.score >= 250) {
@@ -260,7 +149,7 @@
                 noLettersFound(vowelInput);                              
             }
             let vowelDropDown = document.querySelector('#vowelValue').childElementCount;
-            //console.log(vowelDropDown);
+            
             if (vowelDropDown < 1) {
                 vowelDiv.style.visibility = "hidden";
             }
@@ -302,7 +191,7 @@
 
         } else {
             letterResults.innerText = "Wrong solve!";
-            reduceHealth();
+            player1.reduceHealth();
             solveInputField.value = "";
 
             if (player1.health > 0) {

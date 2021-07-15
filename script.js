@@ -5,6 +5,24 @@
 //     {movie: "Buffy the Vampire Slayer", category: "Comedy"},
 //     {movie: "Borat Part Two", category: "Comedy"}
 // ];
+const wheel = document.querySelector(".wheel");
+const startButton = document.querySelector("#spinButton-container");
+const resultShow = document.querySelector(".results");
+const userInput = document.querySelector("#user-input");
+const vowelButton = document.querySelector("#vowelButton");
+const solveButton = document.querySelector("#solveButton");
+const consonantButton = document.querySelector("#consonantButton");
+const letterResults = document.querySelector(".letter-results");
+const scoreBoard = document.querySelector(".p-score");
+const healthBoard = document.querySelector(".p-health");
+const accScoreBoard = document.querySelector(".p-accScore");
+const consonantDiv = document.querySelector(".consonant");
+const vowelDiv = document.querySelector(".vowel");
+const spinAgainDiv = document.querySelector(".spinAgain");
+const spinagainButton = document.querySelector("#spinagainButton");
+const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
+const playAgainButton = document.querySelector("#playAgainButton");
+const mySound = document.querySelector("audio");
 
 class Word {
     constructor(letters, category) {
@@ -98,10 +116,79 @@ class Player {
     updateAccScore() {
         this.accScore = this.accScore + this.score;
     }
-
     
+    //Reduce health function needed when no words found, bankrupt, lose a Turn
+    reduceHealth() {
+        this.health--;
+        healthBoard.innerText = this.health;
+        if (this.health <=0) {
+            userInput.style.display = "none";
+            startButton.style.display = "none";   
+            anotherRoundDiv.style.display = "flex";
+        }
+    }
 }
 
+class Wheel {
+    constructor() {       
+        
+        this.symbolSegments = [
+            300,
+            250,
+            750,
+            "bankrupt",
+            300,
+            250,
+            600,
+            400,
+            150,
+            200,
+            250,
+            400,
+            "loseATurn",
+            450,
+            150,
+            200,
+            100,
+            "freeSpin",
+            200,
+            300,
+            400,
+            500,
+            100,
+            200
+        ];
+
+        this.timer = 0;
+        this.timerInterval = 0;
+        this.deg = 0;
+        this.chosenSlice = "";
+    }
+
+    pressButton() {
+        const resultShow = document.querySelector(".results");
+        const letterResults = document.querySelector(".letter-results");
+        resultShow.innerText = "-";
+        letterResults.innerText = "-";
+        this.timerInterval = setInterval( () => {
+            this.timer = this.timer + 0.5;
+            console.log(this.timer);
+        }, 400);
+    }
+
+    liftButton() {        
+        this.deg = Math.floor(this.timer*1000+Math.floor(Math.random()*700)+360);
+            // Set the transition on the wheel
+        wheel.style.transition = 'all 1s ease-out';
+            // Rotate the wheel
+        wheel.style.transform = `rotate(${this.deg}deg)`;
+            // Apply the blur, so that it looks cool while the wheel is spinning
+        wheel.classList.add('blur');
+        clearInterval(this.timerInterval);
+        this.timer=0;        
+    }
+
+}
 
 //animate the navigation bar
 const toggleButton = document.querySelector(".navbar-toggle");
@@ -164,14 +251,57 @@ function rebuildDropDown() {
     
 } //endOfRebuild function
 
+function transitionEndFnc() {
+    
+    // Remove blur
+    wheel.classList.remove('blur');
+    // Enable button when spin is over
+    startButton.style.pointerEvents = 'auto';
+    // Need to set transition to none as we want to rotate instantly
+    wheel.style.transition = 'none';
+    // Calculate degree on a 360 degree basis to get the real rotation
+    // Important because we want to start the next spin from that one
+    // Use modulus to get the rest value from 360
+    const actualDeg = wheelObj.deg % 360;
+    // Set the real rotation instantly without animation
+    wheel.style.transform = `rotate(${actualDeg}deg)`;
+    //Calculate and display the chosen segment;
+    const segmentSize = 360/wheelObj.symbolSegments.length; //deg per segment of the wheel
+    const winningSegmentNr = Math.ceil(actualDeg/segmentSize);
+    wheelObj.chosenSlice = wheelObj.symbolSegments[winningSegmentNr-1];
+    resultShow.innerText = wheelObj.chosenSlice;
+        
+    if (wheelObj.chosenSlice == "bankrupt") {
+        
+        player1.reduceHealth();
+        player1.score = 0;
+        scoreBoard.innerText = player1.score;   
+
+    } else if (wheelObj.chosenSlice == "freeSpin") {
+        player1.health++;
+        healthBoard.innerText = player1.health;
+        letterResults.innerText = "Health Gained!";  
+
+    } else if (wheelObj.chosenSlice == "loseATurn") {
+        player1.reduceHealth();
+        letterResults.innerText = "Health Lost!";  
+
+    } else {
+        startButton.style.display = "none";      
+        userInput.style.display = "flex";
+    }
+
+}
+
 makeSquares();
 
 const player1 = new Player("Azman");
+const wheelObj = new Wheel();
 
 let randomNumber = Math.floor(Math.random()*originalWord.length);
 
 let wordWOF = new Word(originalWord[randomNumber].title, originalWord[randomNumber].category);
-console.log(originalWord[randomNumber].title);
+//console.log(originalWord[randomNumber].title);
 
 originalWord.splice(randomNumber, 1);
 
