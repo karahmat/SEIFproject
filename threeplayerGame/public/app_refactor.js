@@ -2,6 +2,30 @@
 const socket = io();
 socket.on("connection");
 
+
+//DOM elements
+const spinningSound = document.querySelector("#spinningSound");
+const wheel = document.querySelector(".wheel");
+const startButton = document.querySelector("#spinButton-container");
+const resultShow = document.querySelector(".results");
+const userInput = document.querySelector("#user-input");
+const vowelButton = document.querySelector("#vowelButton");
+const solveButton = document.querySelector("#solveButton");
+const consonantButton = document.querySelector("#consonantButton");
+const letterResults = document.querySelector(".letter-results");
+const consonantDiv = document.querySelector(".consonant");
+const vowelDiv = document.querySelector(".vowel");
+const spinAgainDiv = document.querySelector(".spinAgain");
+const spinagainButton = document.querySelector("#spinagainButton");
+const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
+const playAgainButton = document.querySelector("#playAgainButton");
+const playerDiv = document.querySelector("#player");
+const solveInputField = document.querySelector("#solveValue");
+let wordWOF;
+let player1;
+let wheelObj;
+let vol;
+
 class Word {
     constructor(letters, category) {
         this.letters = letters.toUpperCase();
@@ -216,11 +240,33 @@ class Wheel {
         // Calculate a new rotation which depends on how long one presses the button plus some randomness
         this.deg = Math.floor(this.spinDeg);
         // Set the transition on the wheel
-        wheel.style.transition = 'all 2s ease-out';
+        wheel.style.transition = 'all 5s ease-out';
         // Rotate the wheel
         wheel.style.transform = `rotate(${this.deg}deg)`;
         // Apply the blur, so that it looks cool while the wheel is spinning
-        wheel.classList.add('blur');          
+        wheel.classList.add('blur');   
+        
+        vol = 0.20;
+        spinningSound.volumn = vol;
+        spinningSound.loop = false;        
+        spinningSound.play();
+
+        let fadeout = setInterval( () => {
+            // Reduce volume by 0.05 as long as it is above 0
+            // This works as long as you start with a multiple of 0.05!
+            if (vol > 0) {
+            vol -= 0.025;
+            console.log("vol: "+ vol);            
+            spinningSound.volumn = vol;
+            }
+            else {
+            // Stop the setInterval when 0 is reached                                 
+            clearInterval(fadeout);
+            }
+        }, 626);
+
+
+
         clearInterval(this.timerInterval);
         this.timer=0;
         //what should the programme do after the wheel has finished its animation                
@@ -228,11 +274,7 @@ class Wheel {
 
     transitionEnd() {
         
-        const startButton = document.querySelector("#spinButton-container");
-        const letterResults = document.querySelector(".letter-results");        
-        const userInput = document.querySelector("#user-input");
-        const resultShow = document.querySelector(".results");
-
+        
         //blur the wheel
         wheel.classList.remove('blur');
         // Enable button when spin is over
@@ -290,26 +332,6 @@ class Wheel {
          
 }
 
-//DOM elements
-const wheel = document.querySelector(".wheel");
-const startButton = document.querySelector("#spinButton-container");
-const resultShow = document.querySelector(".results");
-const userInput = document.querySelector("#user-input");
-const vowelButton = document.querySelector("#vowelButton");
-const solveButton = document.querySelector("#solveButton");
-const consonantButton = document.querySelector("#consonantButton");
-const letterResults = document.querySelector(".letter-results");
-const consonantDiv = document.querySelector(".consonant");
-const vowelDiv = document.querySelector(".vowel");
-const spinAgainDiv = document.querySelector(".spinAgain");
-const spinagainButton = document.querySelector("#spinagainButton");
-const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
-const playAgainButton = document.querySelector("#playAgainButton");
-const playerDiv = document.querySelector("#player");
-const solveInputField = document.querySelector("#solveValue");
-let wordWOF;
-let player1;
-let wheelObj;
 
 function makeSquares() {
     const noRows = 5;
@@ -488,7 +510,7 @@ function spinagainClick() {
 
 
 function doSetTimeOut(i, lettersFoundArg, letterInputArg) {
-    const mySound = document.querySelector("audio");
+    const mySound = document.querySelector("#pingSound");
 
     setTimeout( () => {
         

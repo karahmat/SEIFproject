@@ -4,9 +4,10 @@ const express = require('express');
 const socketIO = require('socket.io');
 
 const publicPath = path.join(__dirname, '/../public');
+console.log(publicPath);
 
 //We also need to specify a port our app is going to run on. Let's go with 3000
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +16,20 @@ const io = socketIO(server);
 
 //We need to set our express server to finally serve the content
 app.use(express.static(publicPath));
+
+app.get("/", (req,res) => {
+    res.sendFile(publicPath+"/index.html");
+});
+
+app.get("/about",(req,res) => {
+    res.sendFile(publicPath+"/about.html");
+});
+
+app.get("/onePlayer",(req,res) => {
+    res.sendFile(publicPath+"/onePlayer.html");
+});
+
+
 
 server.listen(port, ()=> {
     console.log(`Server is up on port ${port}.`)
@@ -138,6 +153,8 @@ io.on('connection', (socket) => {
        
 
 });
+
+
 
 //can be put in a utils function later on
 function makeId(lengthInput) {
