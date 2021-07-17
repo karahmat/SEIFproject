@@ -25,15 +25,17 @@ let wordWOF;
 let player1;
 let wheelObj;
 let vol;
+let roundGlobalWOF;
 
 class Word {
-    constructor(letters, category) {
+    constructor(letters, category, roundWOF) {
         this.letters = letters.toUpperCase();
         this.category = category.toUpperCase();
         this.uniqueChar = []; //initialise array to store all my unique characters
         this.charIndex = {};
         this.startWord = [];
         this.uniqueCharCount = 0;
+        this.roundWOF = roundWOF;
         //this.arrIndexLetters = arrIndexLetters;        
     }
 
@@ -118,6 +120,7 @@ class Player {
         this.isTurn = isTurn;
         this.whoseTurn = whoseTurn;
         this.noOfPlayers = noOfPlayers;
+        this.isWinner = false;
     }
 
     updateAccScore() {
@@ -177,6 +180,18 @@ class Player {
             playGame(this);
         });
              
+    } //end of Toggle
+
+    determineWinner() {
+        const players = [];
+        for (let i=0; i<this.noOfPlayers; i++) {
+            const updateAccScore = document.querySelector(".accScore-P"+i);
+            players.push(parseInt(updateAccScore.innerText));            
+        }
+        console.log("Player "+players.indexOf(Math.max(...players))+" is the winner");
+        if (this.isTurn) {
+            socket.emit("toggleToWinner", players.indexOf(Math.max(...players)));
+        }        
     }
     
 }
@@ -255,8 +270,7 @@ class Wheel {
             // Reduce volume by 0.05 as long as it is above 0
             // This works as long as you start with a multiple of 0.05!
             if (vol > 0) {
-            vol -= 0.025;
-            console.log("vol: "+ vol);            
+            vol -= 0.025;                    
             spinningSound.volumn = vol;
             }
             else {
@@ -435,8 +449,9 @@ function init(indexWordInput, noOfPlayers, playerInitID) {
 
     makeSquares();
     wheelObj = new Wheel();  
-    // let randomNumber = Math.floor(Math.random()*originalWord.length);
-    wordWOF = new Word(originalWord[indexWordInput].title, originalWord[indexWordInput].category);
+    
+    roundGlobalWOF = 1;
+    wordWOF = new Word(originalWord[indexWordInput].title, originalWord[indexWordInput].category, roundGlobalWOF);
    
     originalWord.splice(indexWordInput, 1);
 
@@ -551,8 +566,10 @@ function showLettersFound(playerInput, letterInput){
         letterResults.innerText = "SOLVED";
         resultShow.innerText = "SOLVED";   
         userInput.style.display = "none";
-        if (player1.isTurn) {
-            anotherRoundDiv.style.display = "flex";
+        if (playerArg.isTurn && wordWOF.roundWOF<3) {
+            anotherRoundDiv.style.display = "flex";     
+        } else if (playerArg.isTurn && wordWOF.roundWOF == 3) {
+            playerArg.determineWinner();                
         }
             // solveInputField.value = "";
     }
@@ -686,9 +703,11 @@ function playGame(playerArg) {
             resultShow.innerText = "SOLVED";   
             userInput.style.display = "none";            
             solveInputField.value = "";
-            if (playerArg.isTurn) {
-                anotherRoundDiv.style.display = "flex";
-            }            
+            if (playerArg.isTurn && wordWOF.roundWOF<3) {
+                anotherRoundDiv.style.display = "flex";     
+            } else if (playerArg.isTurn && wordWOF.roundWOF == 3) {
+                playerArg.determineWinner();                
+            }
 
         } else {
             letterResults.innerText = "Wrong solve!";
@@ -717,13 +736,15 @@ function playGame(playerArg) {
             square.setAttribute("letter","");
         }
 
-        letterResults.innerText = "NEW RD";
-        resultShow.innerText = "NEW RD";   
-        wordWOF = new Word(originalWord[indexWord].title, originalWord[indexWord].category);
+        roundGlobalWOF++; 
+        wordWOF = new Word(originalWord[indexWord].title, originalWord[indexWord].category,roundGlobalWOF);
         originalWord.splice(indexWord, 1);
         wordWOF.arrangeLetters();
         wordWOF.setCategory();
-        wordWOF.getUniqueLetters();
+        wordWOF.getUniqueLetters();        
+
+        letterResults.innerText = "ROUND "+wordWOF.roundWOF;
+        resultShow.innerText = "ROUND "+wordWOF.roundWOF;  
 
         anotherRoundDiv.style.display = "none";
 
@@ -752,4 +773,21 @@ function playGame(playerArg) {
         rebuildDropDown();
 
     });
+
+    socket.removeAllListeners("toggleToWinnerFrmServer");
+    socket.on("toggleToWinnerFrmServer", (data) => {
+        playerArg.whoseTurn = data.whoseTurnFrmServer;
+        playerDiv.innerText = data.whoseTurnFrmServer + " goes to the Bonus Round";    
+
+        if (playerArg.index == data.indexFrmServer) {
+            playerArg.isWinner = true;     
+            const bonusRoundDiv = document.querySelector("#bonusRoundDiv");
+            bonusRoundDiv.style.display = "flex";                
+        } else {
+            playerArg.isWinner = false;            
+        }
+
+    });
+    
+
 }

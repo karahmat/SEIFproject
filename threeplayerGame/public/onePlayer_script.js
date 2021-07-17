@@ -183,13 +183,15 @@ class Wheel {
         this.deg = Math.floor(this.timer*1000+Math.floor(Math.random()*700)+360);
             // Set the transition on the wheel
         vol = 0.2;
-        spinningSound.volumn = vol;
-        spinningSound.loop = false;        
-        spinningSound.play();
+        
 
         wheel.style.transition = 'all 5s ease';
             // Rotate the wheel
-        wheel.style.transform = `rotate(${this.deg}deg)`;        
+        wheel.style.transform = `rotate(${this.deg}deg)`;   
+        
+        spinningSound.volumn = vol;
+        spinningSound.loop = false;        
+        spinningSound.play();
 
         let fadeout = setInterval( () => {
             // Reduce volume by 0.05 as long as it is above 0

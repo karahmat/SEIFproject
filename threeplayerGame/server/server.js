@@ -7,7 +7,7 @@ const publicPath = path.join(__dirname, '/../public');
 console.log(publicPath);
 
 //We also need to specify a port our app is going to run on. Let's go with 3000
-const port = process.env.PORT || 3001;
+const port = process.env.PORT || 3000;
 
 const app = express();
 const server = http.createServer(app);
@@ -106,7 +106,16 @@ io.on('connection', (socket) => {
                 });
             }
         }
-    })
+    });
+
+    socket.on("toggleToWinner", (indexFrmClient) => {
+        console.log("toggleToWinner: "+indexFrmClient);
+
+        io.in(clientRooms[socket.id]).emit("toggleToWinnerFrmServer",{
+            indexFrmServer: indexFrmClient,
+            whoseTurnFrmServer: roomClients[clientRooms[socket.id]][indexFrmClient].playerName
+            });
+    });
 
 
     socket.on("spinWheelTimer", (timer) => {        

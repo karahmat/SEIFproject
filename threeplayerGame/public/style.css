@@ -324,7 +324,7 @@ button {
     align-items: center;  
 }
 
-#anotherRoundDiv {
+#anotherRoundDiv, #bonusRoundDiv {
     display: none;    
     width: 95%;    
     justify-content: center;
@@ -335,6 +335,13 @@ button {
 #playAgainButton {
     font-size: 20px;
     background-color: #67c50a;
+    height:30px;
+    border-radius: 10px;
+}
+
+#bonusRoundButton {
+    font-size: 20px;
+    background-color: yellow;
     height:30px;
     border-radius: 10px;
 }
