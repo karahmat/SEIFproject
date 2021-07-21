@@ -56,11 +56,6 @@ joinGameButton.addEventListener("click", () => {
     });    
 });
 
-
-socket.on("indexOfWord", (index) => {
-    console.log(originalWord[index].title);
-});
-
 socket.on("status", (data) => {
     if (data === false) {
         waitingPlayer.innerText = "Waiting for Third Player";

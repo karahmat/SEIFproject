@@ -108,12 +108,12 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on("toggleToWinner", (indexFrmClient) => {
-        console.log("toggleToWinner: "+indexFrmClient);
+    socket.on("toggleToWinner", (winnerIndex) => {
+        console.log("toggleToWinner: "+winnerIndex);
 
         io.in(clientRooms[socket.id]).emit("toggleToWinnerFrmServer",{
-            indexFrmServer: indexFrmClient,
-            whoseTurnFrmServer: roomClients[clientRooms[socket.id]][indexFrmClient].playerName
+            indexFrmServer: winnerIndex,
+            whoseTurnFrmServer: roomClients[clientRooms[socket.id]][winnerIndex].playerName            
             });
     });
 
@@ -158,6 +158,23 @@ io.on('connection', (socket) => {
         const randomNoPlayAgain = Math.floor(Math.random()*playAgainWordsLength);
         io.in(clientRooms[socket.id]).emit("playAgainIndexWord",randomNoPlayAgain);
 
+    });
+
+    socket.on("bonusRoundPressed", (bonusWordLength) => {
+        const randomNoBonusRound = Math.floor(Math.random()*bonusWordLength);
+        io.in(clientRooms[socket.id]).emit("bonusRoundFromServer",randomNoBonusRound);
+    });
+
+    socket.on("startBonusRound", () => {
+        io.in(clientRooms[socket.id]).emit("startBonusRoundFromServer");
+    });
+
+    socket.on("bonusLettersSubmitted", letters => {
+        io.in(clientRooms[socket.id]).emit("bonusLettersFromServer",letters);
+    });
+
+    socket.on("solveBonusFinal", letters => {
+        io.in(clientRooms[socket.id]).emit("solveBonusFinalFromServer",letters);
     });
        
 

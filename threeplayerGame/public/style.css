@@ -123,13 +123,13 @@ body {
 #noOfPlayersContainer {    
     display: flex;
     width: 60%;    
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;    
-    margin-bottom: 20px;
+    margin-bottom: 20px;    
 }
 
 #noOfPlayersContainer select {
-    margin: 0px;
+    margin: 0px 0px 0px 30px;
 }
 
 #player {
@@ -298,7 +298,7 @@ body {
     font-size: 15px;
 }
 
-label {
+#user-input > div > label {
     font-size: 18px;    
 }
 
@@ -345,6 +345,52 @@ button {
     height:30px;
     border-radius: 10px;
 }
+
+#bonusInputDiv {
+    width: 80%;
+    color: white;    
+    margin: 20px auto;
+    display: none;    
+    flex-direction: column;
+    border: 1px solid white;
+}
+
+#solveBonusFinal {
+    display: none;
+    flex-direction: column;    
+    align-items: center;
+}
+
+#bonusTitle, #bonusError {    
+    text-align: center;
+    font-size: 20px;
+    padding: 5px 0px 5px 0px;
+    color: #67c50a;
+}
+
+#consBonus, #vowelBonus {   
+    display: flex;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+    border: 1px solid yellow;    
+}
+
+#consBonus > div, #vowelBonus > div {
+    display: flex;
+    align-items: center;   
+    padding: 5px;   
+    font-size: 20px;
+    margin: 10px;    
+}
+
+#consBonus > div > input, #vowelBonus > div > input {    
+    width: 20px;
+    height: 20px;    
+    margin-left: 10px;    
+}
+
+
+
 
 @media only screen and (min-width: 800px) {
     .navbar-toggle {
@@ -398,7 +444,7 @@ button {
         justify-content: center;
     }
 
-    #user-input {
+    #bonusInputDiv, #user-input {
         width: 45%;
         margin-left: 15px;
         flex-direction: column;
@@ -407,7 +453,7 @@ button {
         margin: 0px auto;
     }
     
-    label {
+    #user-input > div > label {
         font-size: 24px;    
     }
 

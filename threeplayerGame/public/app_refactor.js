@@ -21,11 +21,16 @@ const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
 const playAgainButton = document.querySelector("#playAgainButton");
 const playerDiv = document.querySelector("#player");
 const solveInputField = document.querySelector("#solveValue");
-let wordWOF;
-let player1;
-let wheelObj;
-let vol;
-let roundGlobalWOF;
+const bonusRoundButton = document.querySelector("#bonusRoundButton");
+
+//global variables
+let wordWOF; //variable to store instance of Word Class
+let player1; //variable to store instance of Player Class
+let wheelObj; //variable to store instance of Wheel Class 
+let vol; //volume of sound of wheel spinning
+let roundGlobalWOF; //variable to track how many rounds have been played
+let bonusLetters; //variable to store the letters submitted during the bonus round        
+        
 
 class Word {
     constructor(letters, category, roundWOF) {
@@ -189,8 +194,8 @@ class Player {
             players.push(parseInt(updateAccScore.innerText));            
         }
         console.log("Player "+players.indexOf(Math.max(...players))+" is the winner");
-        if (this.isTurn) {
-            socket.emit("toggleToWinner", players.indexOf(Math.max(...players)));
+        if (this.isTurn) {            
+            socket.emit("toggleToWinner",players.indexOf(Math.max(...players)));
         }        
     }
     
@@ -231,7 +236,8 @@ class Wheel {
         this.timerSpin1 = 0;
         this.spinDeg = 0;
         this.actualDeg = 0;        
-        this.chosenSlice = "";                  
+        this.chosenSlice = "";
+        this.isBonusRound = false;                  
 
     } //end of constructor
  
@@ -334,11 +340,16 @@ class Wheel {
                 player1.togglePlayer();
         
         } else {
-            if (player1.isTurn) {
+            if (player1.isTurn && this.isBonusRound === false) {
                 startButton.style.display = "none";      
                 userInput.style.display = "flex";
+
+                //Else if statement to Deal with Bonus Round
+            } else if (player1.isWinner && this.isBonusRound) {
+                socket.emit("startBonusRound");                
+                                  
             } else {
-                userInput.style.display = "none";                    
+                userInput.style.display = "none";  
             }
         }    
     }
@@ -536,6 +547,8 @@ function doSetTimeOut(i, lettersFoundArg, letterInputArg) {
     }, i*1500);
 }
 
+
+
 //What to do if the guessed letter (vowels or consonants) is found
 function showLettersFound(playerInput, letterInput){
     
@@ -599,9 +612,74 @@ function playAgainGame() {
     socket.emit("playAgainRandomNo", originalWord.length);    
 }
 
-////==========////
-//==========
-//==============
+//=========FUNCTIONS FOR BONUS ROUND===========
+//=============================================
+
+//showlettersFoundforBonusRound
+//What to do if the guessed letter (vowels or consonants) is found
+function showBonusLettersFound(letterInput){
+    
+    const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
+    
+    for (let i=0; i<lettersFound.length; i++) { 
+        doSetTimeOut(i, lettersFound, letterInput);
+    }
+
+    wordWOF.uniqueCharCount--;
+
+    //if all the letters have been guessed
+    if (wordWOF.uniqueCharCount === 0) {
+        letterResults.innerText = "SOLVED";
+        resultShow.innerText = "SOLVED";   
+        userInput.style.display = "none";        
+            // solveInputField.value = "";
+    }
+
+};
+
+
+function playBonusRound() {
+    socket.emit("bonusRoundPressed", bonusRound.length);
+}
+
+//function to deal with the letters submitted during Bonus Round
+function checkboxFnc(e) {       
+    const chk = document.querySelectorAll("#chk");
+    let count1 = 0;
+    bonusLetters = "";
+    for (let i=0; i<chk.length; i++) {
+        if(chk[i].checked) {
+            count1++;
+            bonusLetters = bonusLetters + chk[i].value;
+        }
+    }       
+    
+    if (count1>3 || count1 < 3) {
+        document.querySelector("#bonusError").innerText = "Please select only three consonants";                      
+        
+    } else if (count1 === 3){            
+        document.querySelector("#bonusError").innerHTML = "";
+        const submitBonusButton = document.createElement("button");
+        submitBonusButton.id = "solveBonus";
+        submitBonusButton.innerText = "Submit Letters";
+        document.querySelector("#bonusError").append(submitBonusButton);
+        submitBonusButton.removeEventListener("click", submitBonusLetters);
+        submitBonusButton.addEventListener("click", submitBonusLetters);           
+    }
+}
+
+function submitBonusLetters() {
+    bonusLetters = bonusLetters + document.querySelector('input[name="chk1"]:checked').value;
+    socket.emit("bonusLettersSubmitted", bonusLetters);
+}
+
+function solveBonusFnc() {
+    socket.emit("solveBonusFinal", document.querySelector("#solveBonusField").value.toUpperCase());
+}
+
+//=====================================
+//====================================
+//=====================================
 
 function playGame(playerArg) {
    
@@ -612,8 +690,6 @@ function playGame(playerArg) {
     } else {
         startButton.style.display = "none";        
     }
-
-    
     
     consonantDiv.style.display = "block";
     spinAgainDiv.style.display = "none";    
@@ -777,16 +853,109 @@ function playGame(playerArg) {
     socket.removeAllListeners("toggleToWinnerFrmServer");
     socket.on("toggleToWinnerFrmServer", (data) => {
         playerArg.whoseTurn = data.whoseTurnFrmServer;
-        playerDiv.innerText = data.whoseTurnFrmServer + " goes to the Bonus Round";    
+        playerDiv.innerText = data.whoseTurnFrmServer + " goes to the Bonus Round";         
 
         if (playerArg.index == data.indexFrmServer) {
-            playerArg.isWinner = true;     
+            playerArg.isWinner = true;
+            playerArg.isTurn = true;     
             const bonusRoundDiv = document.querySelector("#bonusRoundDiv");
             bonusRoundDiv.style.display = "flex";                
         } else {
             playerArg.isWinner = false;            
         }
 
+    });
+
+    //Game Controllers for Bonus Round
+
+    bonusRoundButton.removeEventListener("click", playBonusRound);
+    bonusRoundButton.addEventListener("click", playBonusRound);
+
+    socket.on("startBonusRoundFromServer", () => {
+        startButton.style.display = "none";
+        userInput.style.display = "none";
+        const defaultLetters = "RSTLNE";
+        letterResults.innerText = defaultLetters;
+        defaultLetters.split("").forEach((letter) => {
+            if (wordWOF.letters.includes(letter)) {
+                showBonusLettersFound(letter);
+            }
+        });
+        document.querySelector("#wheel-container").style.display = "none";
+
+        if (playerArg.isWinner) {                
+            document.querySelector("#bonusInputDiv").style.display = "flex";
+        }        
+
+    });
+
+    socket.removeAllListeners("bonusRoundFrmServer");
+    socket.on("bonusRoundFromServer", (bonusWordIndex) => {
+        const squares = document.querySelectorAll(".square");
+    
+        for (const square of squares) {
+            square.innerText = "";
+            square.style["background-color"] = "#ffd900";
+            square.setAttribute("letter","");
+        }
+        
+        wordWOF = new Word(bonusRound[bonusWordIndex].title, bonusRound[bonusWordIndex].category,1);        
+        wordWOF.arrangeLetters();
+        wordWOF.setCategory();
+        wordWOF.getUniqueLetters();        
+
+        letterResults.innerText = "BONUS ROUND";
+        resultShow.innerText = "BONUS ROUND";  
+
+        bonusRoundDiv.style.display = "none";
+        userInput.style.display = "none"; 
+        wheel.src = "images/wofbonuswheel.png";
+        wheelObj.symbolSegments = ["I","H","G","F","E","D","C","B","A"];
+        wheelObj.isBonusRound = true;
+
+        if (player1.isTurn) {
+            startButton.style.display = "flex";
+        } else {
+            startButton.style.display = "none";
+        }
+ 
+    })
+
+    document.querySelector("#consBonus").removeEventListener("click", checkboxFnc);
+    document.querySelector("#consBonus").addEventListener("click", checkboxFnc);
+
+    //what to do once bonus letters from server have been sent to all players
+    socket.removeAllListeners("bonusLettersFromServer");
+    socket.on("bonusLettersFromServer", letters => {
+        document.querySelector("#bonusTitle").style.display = "none";
+        document.querySelector("#consBonus").style.display = "none";
+        document.querySelector("#vowelBonus").style.display = "none";
+        document.querySelector("#bonusError").style.display = "none";
+        letterResults.innerText = letters;
+        for (const letter1 of letters) {
+            showBonusLettersFound(letter1);
+        }
+        document.querySelector("#solveBonusFinal").style.display = "flex";
+    });
+
+    document.querySelector("#solveBonusButton").removeEventListener("click", solveBonusFnc);
+    document.querySelector("#solveBonusButton").addEventListener("click", solveBonusFnc);
+
+    socket.on("solveBonusFinalFromServer", solveBonusLetters => {
+        if (solveBonusLetters === wordWOF.letters) {
+            for (let i=0; i<solveBonusLetters.length; i++) {
+                if (solveBonusLetters[i] !== " ") {                    
+                    const lettersFound = document.querySelectorAll("[letter ="+solveBonusLetters[i]+"]");
+                    for (const letter of lettersFound) {
+                        letter.innerText = solveBonusLetters[i];
+                        letter.style["background-color"] = "white";                
+                    }
+                }
+            }
+
+            letterResults.innerText = "END GAME";
+            resultShow.innerText = "END GAME";   
+        }
     });
     
 

@@ -207,4 +207,6 @@
 
     playAgainButton.addEventListener('click', playAgainGame); //end of play again button
 
+   
+
   })();
