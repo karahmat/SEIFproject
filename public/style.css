@@ -90,6 +90,15 @@ body {
     align-items: center;
 }
 
+#form #instructions {
+    line-height: 1.5;
+    border: 1px solid white;
+}
+
+#instructions > h2 {
+    margin-left: 15px;
+}
+
 #form input, #form #newGameButton, #form #joinGameButton, #form #gameCodeInput {
     margin-bottom: 20px;
     font-size: 20px;

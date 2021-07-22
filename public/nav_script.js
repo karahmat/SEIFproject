@@ -6,3 +6,4 @@ toggleButton.addEventListener("click", () => {
         navBarLinks[i].classList.toggle("active");
     }
 });
+

@@ -21,17 +21,23 @@
             lettersFoundArg[i].style["background-color"] = "white";
             lettersFoundArg[i].style.transition = "background-color 1s ease";
             lettersFoundArg[i].innerText = letterInputArg;
+
         }, i*1500);
     }
 
     //What to do if the guessed letter (vowels or consonants) is found
     function showLettersFound(letterInput){
+
         const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
         const letterDropDown = document.querySelector("#letter"+letterInput);
+
         letterResults.innerText = lettersFound.length + " " + letterInput + " found";
+
         for (let i=0; i<lettersFound.length; i++) { 
+
                 doSetTimeOut(i, lettersFound, letterInput);
-            }
+
+        }
 
         letterDropDown.remove();
 
