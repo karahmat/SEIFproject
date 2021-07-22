@@ -3,7 +3,7 @@
 ## Introduction
 This my first project for a software engineering course. The objective of the project is to present the front-end web/software-development skills that I  have learned. However, for my multiplayer game, I needed a server. I have thus picked up backend development on my own using NodeJS. 
 
-If you are only interested to play the game, you can go to [my app deployed on Heroku](wofazman.herokuapp.com "Wheel Of Fortune by Azman")
+If you are only interested to play the game, you can go to [my app deployed on Heroku](https://wofazman.herokuapp.com "Wheel Of Fortune by Azman")
 
 ## File Structure
 
