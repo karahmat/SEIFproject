@@ -25,6 +25,7 @@ const anotherRoundDiv = document.querySelector("#anotherRoundDiv");
 const playAgainButton = document.querySelector("#playAgainButton");
 const pingSound = document.querySelector("#pingSound");
 const spinningSound = document.querySelector("#spinningSound");
+const wrongSound = document.querySelector("#wrongAnswer");
 let vol;
 
 class Word {
@@ -197,8 +198,7 @@ class Wheel {
             // Reduce volume by 0.05 as long as it is above 0
             // This works as long as you start with a multiple of 0.05!
             if (vol > 0) {
-            vol -= 0.025;
-            console.log("vol: "+ vol);            
+            vol -= 0.025;                      
             spinningSound.volumn = vol;
             }
             else {

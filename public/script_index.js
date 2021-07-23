@@ -12,6 +12,14 @@ toggleButton.addEventListener("click", () => {
     }
 });
 
+//animate the instruction bar
+const instructionHeader = document.querySelector("#instructions > h2");
+const orderedLists = document.querySelector(".instructionToggle");
+instructionHeader.addEventListener("click", () => {
+    console.log(orderedLists);
+    orderedLists.classList.toggle("active1");
+});
+
 //form controls
 
 const newGameButton = document.querySelector("#newGameButton");

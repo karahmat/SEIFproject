@@ -5,6 +5,7 @@ socket.on("connection");
 
 //DOM elements
 const spinningSound = document.querySelector("#spinningSound");
+const wrongSound = document.querySelector("#wrongAnswer");
 const wheel = document.querySelector(".wheel");
 const startButton = document.querySelector("#spinButton-container");
 const resultShow = document.querySelector(".results");
@@ -593,6 +594,7 @@ function showLettersFound(playerInput, letterInput){
 //What to do if the guessed letter (vowels or consonants) is not found
 function noLettersFound(playerNoLetters,letterInput) {
     //const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
+    wrongSound.play();
     const letterDropDown = document.querySelector("#letter"+letterInput);        
     letterResults.innerText = "No "+letterInput+" found!";  
     
@@ -786,6 +788,7 @@ function playGame(playerArg) {
             }
 
         } else {
+            wrongSound.play();
             letterResults.innerText = "Wrong solve!";
             playerArg.togglePlayer();
             solveInputField.value = "";

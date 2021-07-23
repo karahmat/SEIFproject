@@ -63,6 +63,7 @@
     //What to do if the guessed letter (vowels or consonants) is not found
     function noLettersFound(letterInput) {
         //const lettersFound = document.querySelectorAll("[letter ="+letterInput+"]");
+        wrongSound.play();
         const letterDropDown = document.querySelector("#letter"+letterInput);        
         letterResults.innerText = "No "+letterInput+" found!";
         player1.reduceHealth();
@@ -196,6 +197,7 @@
             solveInputField.value = "";
 
         } else {
+            wrongSound.play();
             letterResults.innerText = "Wrong solve!";
             player1.reduceHealth();
             solveInputField.value = "";

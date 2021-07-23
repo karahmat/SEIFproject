@@ -35,7 +35,7 @@ body {
 }
 
 .logo {        
-    color: #67c50a;
+    color: #67c50a;    
     text-align: center;
     font-weight: bold;
     /* margin-right: 150px; */
@@ -93,10 +93,33 @@ body {
 #form #instructions {
     line-height: 1.5;
     border: 1px solid white;
+    width: 100%;
 }
 
 #instructions > h2 {
-    margin-left: 15px;
+    margin-left: 20px;    
+    border-radius: 5px;    
+}
+
+#instructions > h2:hover {
+    opacity: 0.7;
+    cursor: pointer;
+}
+
+#instructions > h2 > span {
+    background-color: #054e6f;
+    color: yellow;
+    padding: 0px 5px 0px 5px;
+    border-radius: 5px;
+}
+
+.instructionToggle {
+    display: none;
+    width: 80%;    
+}
+
+.active1 {
+    display: block;
 }
 
 #form input, #form #newGameButton, #form #joinGameButton, #form #gameCodeInput {
@@ -316,6 +339,10 @@ body {
             
 }
 
+.vowel > select, .consonant > select, .solve > input {
+    margin-bottom: 20px;
+}
+
 input, select, button {
     font-size: 15px;
     margin: 5px auto 5px auto;
@@ -423,6 +450,10 @@ button {
     .navbar-links:hover a {
         color: black;
     }
+
+    .square {
+        font-size: 25px;
+    }
 }
 
 @media only screen and (min-width: 1000px) {
@@ -469,5 +500,9 @@ button {
     .vowel, .solve,.consonant, .spinAgain {
         border-bottom: 1px solid white;
         margin: 10px auto 10px auto;
+    }
+
+    .square {
+        font-size: 35px;
     }
 }
