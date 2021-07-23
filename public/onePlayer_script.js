@@ -278,7 +278,7 @@ function rebuildDropDown() {
 } //endOfRebuild function
 
 function transitionEndFnc() {
-    console.log("stop");
+    
     // Remove blur
     wheel.classList.remove('blur');
     //spinningSound.pause();

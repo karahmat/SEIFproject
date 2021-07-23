@@ -194,7 +194,7 @@ class Player {
             const updateAccScore = document.querySelector(".accScore-P"+i);
             players.push(parseInt(updateAccScore.innerText));            
         }
-        console.log("Player "+players.indexOf(Math.max(...players))+" is the winner");
+        //console.log("Player "+players.indexOf(Math.max(...players))+" is the winner");
         if (this.isTurn) {            
             socket.emit("toggleToWinner",players.indexOf(Math.max(...players)));
         }        
@@ -853,6 +853,9 @@ function playGame(playerArg) {
 
     });
 
+    //====================================
+    //All sockets related to the Bonus Round
+    //======================================
     socket.removeAllListeners("toggleToWinnerFrmServer");
     socket.on("toggleToWinnerFrmServer", (data) => {
         playerArg.whoseTurn = data.whoseTurnFrmServer;
@@ -864,36 +867,18 @@ function playGame(playerArg) {
             const bonusRoundDiv = document.querySelector("#bonusRoundDiv");
             bonusRoundDiv.style.display = "flex";                
         } else {
-            playerArg.isWinner = false;            
+            playerArg.isWinner = false;
+            playerArg.isTurn = false;            
         }
 
     });
 
     //Game Controllers for Bonus Round
 
-    bonusRoundButton.removeEventListener("click", playBonusRound);
-    bonusRoundButton.addEventListener("click", playBonusRound);
-
-    socket.on("startBonusRoundFromServer", () => {
-        startButton.style.display = "none";
-        userInput.style.display = "none";
-        const defaultLetters = "RSTLNE";
-        letterResults.innerText = defaultLetters;
-        defaultLetters.split("").forEach((letter) => {
-            if (wordWOF.letters.includes(letter)) {
-                showBonusLettersFound(letter);
-            }
-        });
-        document.querySelector("#wheel-container").style.display = "none";
-
-        if (playerArg.isWinner) {                
-            document.querySelector("#bonusInputDiv").style.display = "flex";
-        }        
-
-    });
-
     socket.removeAllListeners("bonusRoundFrmServer");
     socket.on("bonusRoundFromServer", (bonusWordIndex) => {
+
+        //clear the words board
         const squares = document.querySelectorAll(".square");
     
         for (const square of squares) {
@@ -916,13 +901,42 @@ function playGame(playerArg) {
         wheelObj.symbolSegments = ["I","H","G","F","E","D","C","B","A"];
         wheelObj.isBonusRound = true;
 
-        if (player1.isTurn) {
+        if (playerArg.isWinner) {
             startButton.style.display = "flex";
         } else {
             startButton.style.display = "none";
         }
  
-    })
+    });
+
+    bonusRoundButton.removeEventListener("click", playBonusRound);
+    bonusRoundButton.addEventListener("click", playBonusRound);
+
+    socket.on("startBonusRoundFromServer", () => {
+        startButton.style.display = "none";
+        userInput.style.display = "none";
+
+        const defaultLetters = "RSTLNE";
+        letterResults.innerText = defaultLetters;
+        defaultLetters.split("").forEach((letter) => {
+            if (wordWOF.letters.includes(letter)) {
+                showBonusLettersFound(letter);
+                resultShow.innerText = "RSTLNE";
+                letterResults.innerText = "RSTLNE";
+            }
+        });
+
+        document.querySelector("#wheel-container").style.display = "none";
+
+        if (playerArg.isWinner) {
+            setTimeout( () => {
+                document.querySelector("#bonusInputDiv").style.display = "flex";
+            }, 4000);
+            
+        }        
+
+    });
+
 
     document.querySelector("#consBonus").removeEventListener("click", checkboxFnc);
     document.querySelector("#consBonus").addEventListener("click", checkboxFnc);
@@ -938,6 +952,7 @@ function playGame(playerArg) {
         for (const letter1 of letters) {
             showBonusLettersFound(letter1);
         }
+        resultShow.innerText = letters;
         document.querySelector("#solveBonusFinal").style.display = "flex";
     });
 
@@ -956,7 +971,10 @@ function playGame(playerArg) {
                 }
             }
 
-            letterResults.innerText = "END GAME";
+            letterResults.innerText = "CONGRATS";
+            resultShow.innerText = "END GAME";   
+        } else {
+            letterResults.innerText = "WRONG SOLVE";
             resultShow.innerText = "END GAME";   
         }
     });

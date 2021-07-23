@@ -16,7 +16,7 @@ toggleButton.addEventListener("click", () => {
 const instructionHeader = document.querySelector("#instructions > h2");
 const orderedLists = document.querySelector(".instructionToggle");
 instructionHeader.addEventListener("click", () => {
-    console.log(orderedLists);
+    //console.log(orderedLists);
     orderedLists.classList.toggle("active1");
 });
 

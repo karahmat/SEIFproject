@@ -1,5 +1,5 @@
 const wheel = document.querySelector("#wheel");
-const button = document.querySelector("#startButton");
+const startButton = document.querySelector("#startButton");
 let deg = 0;
 let timer = 2;
 let timerInterval;
