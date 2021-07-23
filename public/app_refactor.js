@@ -286,13 +286,12 @@ class Wheel {
             }
         }, 626);
 
-
-
         clearInterval(this.timerInterval);
         this.timer=0;
-        //what should the programme do after the wheel has finished its animation                
+                        
     }
 
+    //what should the programme do after the wheel has finished its animation
     transitionEnd() {
         
         
